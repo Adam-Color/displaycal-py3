@@ -13614,7 +13614,7 @@ BEGIN_DATA
                 port=getcfg("webserver.portnumber"), logfile=logfile
             )
         elif pgname.startswith("Chromecast "):
-            from DisplayCAL.chromecast_patterngenerator import (
+            from DisplayCAL.chromecast_pattern_generator import (
                 ChromeCastPatternGenerator,
             )
 
