@@ -122,9 +122,9 @@ from DisplayCAL.config import (
     get_display_profile,
     get_total_patches,
     get_verified_path,
-    getbitmap,
+    get_bitmap,
     getcfg,
-    geticon,
+    get_icon,
     hascfg,
     initcfg,
     is_ccxx_testchart,
@@ -387,7 +387,7 @@ def app_update_check(parent=None, silent=False, snapshot=False, argyll=False):
                 parent,
                 msg=lang.getstr("update_check.fail.version", DOMAIN),
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-error"),
+                bitmap=get_icon(32, "dialog-error"),
                 log=False,
             )
             return
@@ -489,7 +489,7 @@ def app_uptodate(parent=None, appname=APPNAME):
         parent,
         msg=lang.getstr("update_check.uptodate", appname),
         ok=lang.getstr("ok"),
-        bitmap=geticon(32, "dialog-information"),
+        bitmap=get_icon(32, "dialog-information"),
         show=False,
         log=False,
     )
@@ -551,7 +551,7 @@ def app_update_confirm(
         ok=ok,
         alt=alt,
         cancel=lang.getstr("cancel"),
-        bitmap=geticon(32, "dialog-information"),
+        bitmap=get_icon(32, "dialog-information"),
         log=True,
     )
     scale = getcfg("app.dpi") / config.get_default_dpi()
@@ -564,7 +564,7 @@ def app_update_confirm(
     ):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         dlg.sizer3.Insert(0, sizer, flag=wx.BOTTOM | wx.ALIGN_LEFT, border=12)
-        sizer.Add(wx.StaticBitmap(dlg, -1, geticon(16, "dialog-warning")))
+        sizer.Add(wx.StaticBitmap(dlg, -1, get_icon(16, "dialog-warning")))
         warning_text = lang.getstr(
             "library.not_found.warning", (lang.getstr("libXss.so"), "libXss.so")
         )
@@ -712,7 +712,7 @@ def donation_message(parent=None):
         msg=lang.getstr("donation_message"),
         ok=lang.getstr("contribute"),
         cancel=lang.getstr("not_now"),
-        bitmap=getbitmap("theme/headericon"),
+        bitmap=get_bitmap("theme/headericon"),
         bitmap_margin=0,
     )
     header = wx.StaticText(dlg, -1, lang.getstr("donation_header"))
@@ -759,7 +759,7 @@ def colorimeter_correction_web_check_choose(resp, parent=None):
                 parent,
                 msg=lang.getstr("colorimeter_correction.web_check.failure"),
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-information"),
+                bitmap=get_icon(32, "dialog-information"),
             )
             return None
     else:
@@ -770,18 +770,18 @@ def colorimeter_correction_web_check_choose(resp, parent=None):
         msg=lang.getstr("colorimeter_correction.web_check.choose"),
         ok=lang.getstr("ok"),
         cancel=lang.getstr("cancel"),
-        bitmap=geticon(32, "dialog-information"),
+        bitmap=get_icon(32, "dialog-information"),
         nowrap=True,
     )
     dlg.info = PlateButton(
         dlg.buttonpanel,
         -1,
         lang.getstr("colorimeter_correction.info"),
-        geticon(16, "info"),
+        get_icon(16, "info"),
     )
     hover_color = dlg.info._color["htxt"].GetAsString(wx.C2S_HTML_SYNTAX)
-    dlg.info.SetBitmapHover(geticon(16, "info" + hover_color))
-    dlg.info.SetBitmapDisabled(get_bitmap_disabled(geticon(16, "info")))
+    dlg.info.SetBitmapHover(get_icon(16, "info" + hover_color))
+    dlg.info.SetBitmapDisabled(get_bitmap_disabled(get_icon(16, "info")))
     dlg.sizer2.Insert(0, dlg.info, flag=wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, border=12)
     dlg.sizer2.Insert(0, (32 + 7, 1))
     scale = getcfg("app.dpi") / config.get_default_dpi()
@@ -1036,7 +1036,7 @@ def colorimeter_correction_check_overwrite(
             msg=lang.getstr("dialog.confirm_overwrite", path),
             ok=lang.getstr("ok"),
             cancel=lang.getstr("cancel"),
-            bitmap=geticon(32, "dialog-warning"),
+            bitmap=get_icon(32, "dialog-warning"),
         )
         result = dlg.ShowWindowModalBlocking()
         dlg.Destroy()
@@ -1165,7 +1165,7 @@ def get_header(
     header.SetMaxFontSize(11)
     label = label or lang.getstr("header")
     if not bitmap:
-        bitmap = getbitmap("theme/header", False)
+        bitmap = get_bitmap("theme/header", display_missing_icon=False)
         if bitmap.Size[0] >= w and bitmap.Size[1] >= h:
             bitmap = bitmap.GetSubBitmap((0, 0, w, h))
     header.MinSize = size
@@ -1227,7 +1227,7 @@ def upload_colorimeter_correction(
             parent,
             msg=lang.getstr("colorimeter_correction.upload.exists"),
             ok=lang.getstr("ok"),
-            bitmap=geticon(32, "dialog-information"),
+            bitmap=get_icon(32, "dialog-information"),
         )
         return
     # Upload
@@ -1247,7 +1247,7 @@ def upload_colorimeter_correction(
                 parent,
                 msg=lang.getstr("colorimeter_correction.upload.success"),
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-information"),
+                bitmap=get_icon(32, "dialog-information"),
             )
         else:
             wx.CallAfter(
@@ -1255,7 +1255,7 @@ def upload_colorimeter_correction(
                 parent,
                 msg=b"\n\n".join([failure_msg, resp.read().strip()]),
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-error"),
+                bitmap=get_icon(32, "dialog-error"),
             )
 
 
@@ -1587,7 +1587,7 @@ class GamapFrame(BaseFrame):
                     self,
                     msg=lang.getstr("profile.invalid") + "\n" + v,
                     ok=lang.getstr("ok"),
-                    bitmap=geticon(32, "dialog-error"),
+                    bitmap=get_icon(32, "dialog-error"),
                 )
                 self.gamap_profile.SetPath("")
                 v = None
@@ -2163,7 +2163,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
         self.header_btm = BitmapBackgroundPanel(self.headerpanel, size=(w, -1))
         self.header_btm.BackgroundColour = "#0e59a9"
         self.header_btm.scalebitmap = False, False
-        header_bmp = getbitmap("theme/header", False)
+        header_bmp = get_bitmap("theme/header", display_missing_icon=False)
         if header_bmp.Size[0] >= w and header_bmp.Size[1] >= h + y:
             header_bmp = header_bmp.GetSubBitmap((0, y, w, h))
             self.header_btm.SetBitmap(header_bmp)
@@ -2214,11 +2214,11 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             self.display_instrument_info_panel,
             -1,
             "info.display_tech.show",
-            geticon(16, "info"),
+            get_icon(16, "info"),
         )
         hovercolor = btn._color["htxt"].GetAsString(wx.C2S_HTML_SYNTAX)
-        btn.SetBitmapHover(geticon(16, "info" + hovercolor))
-        btn.SetBitmapDisabled(get_bitmap_disabled(geticon(16, "info")))
+        btn.SetBitmapHover(get_icon(16, "info" + hovercolor))
+        btn.SetBitmapDisabled(get_bitmap_disabled(get_icon(16, "info")))
         self.display_instrument_info_panel.Sizer.Add((0, int(14 * scale)))
         self.display_instrument_info_panel.Sizer.Add(
             btn, flag=wx.LEFT, border=int((16 + 32 + 7) * scale)
@@ -2240,8 +2240,8 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             self.buttonpanelheader = BitmapBackgroundPanel(
                 self.panel, size=(-1, int(15 * scale))
             )
-            # bmp = getbitmap("theme/gradient", False)
-            bmp = getbitmap("theme/shadow-bordertop", False)
+            # bmp = get_bitmap("theme/gradient", False)
+            bmp = get_bitmap("theme/shadow-bordertop", display_missing_icon=False)
             # if bmp.Size[0] >= 8 and bmp.Size[1] >= 96:
             # bmp = bmp.GetSubBitmap(
             #     (0, 1, 8, 15)
@@ -2284,7 +2284,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             self.tabpanelheader = BitmapBackgroundPanel(self.panel, size=(-1, 14))
             # self.tabpanelfooter = BitmapBackgroundPanel(self.panel,
             # size=(-1, 15))
-            # bmp = getbitmap("theme/gradient", False)
+            # bmp = get_bitmap("theme/gradient", False)
             # if bmp.Size[0] >= 8 and bmp.Size[1] >= 96:
             # sub = bmp.GetSubBitmap((0, 1, 8, 15)).ConvertToImage()
             # bmp = sub.Mirror(False).ConvertToBitmap()
@@ -2315,7 +2315,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             self.tabpanel,
             -1,
             label="display-instrument",
-            bmp=geticon(32, "display-instrument"),
+            bmp=get_icon(32, "display-instrument"),
             style=platebtn.PB_STYLE_TOGGLE,
         )
         self.display_instrument_btn.Bind(wx.EVT_TOGGLEBUTTON, self.tab_select_handler)
@@ -2326,7 +2326,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             self.tabpanel,
             -1,
             label="calibration",
-            bmp=geticon(32, "calibration"),
+            bmp=get_icon(32, "calibration"),
             style=platebtn.PB_STYLE_TOGGLE,
         )
         self.calibration_settings_btn.Bind(wx.EVT_TOGGLEBUTTON, self.tab_select_handler)
@@ -2337,7 +2337,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             self.tabpanel,
             -1,
             label="profiling",
-            bmp=geticon(32, "profiling"),
+            bmp=get_icon(32, "profiling"),
             style=platebtn.PB_STYLE_TOGGLE,
         )
         self.profile_settings_btn.Bind(wx.EVT_TOGGLEBUTTON, self.tab_select_handler)
@@ -2348,7 +2348,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             self.tabpanel,
             -1,
             label="3dlut",
-            bmp=geticon(32, "3dlut"),
+            bmp=get_icon(32, "3dlut"),
             style=platebtn.PB_STYLE_TOGGLE,
         )
         self.lut3d_settings_btn.Bind(wx.EVT_TOGGLEBUTTON, self.tab_select_handler)
@@ -2359,7 +2359,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             self.tabpanel,
             -1,
             label="verification",
-            bmp=geticon(32, "dialog-ok"),
+            bmp=get_icon(32, "dialog-ok"),
             style=platebtn.PB_STYLE_TOGGLE,
         )
         self.mr_settings_btn.Bind(wx.EVT_TOGGLEBUTTON, self.tab_select_handler)
@@ -2466,7 +2466,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
         self.header.GetContainingSizer().Show(self.header, self.Size[1] > 480 * scale)
         if not hasattr(self, "header_btm_bmp"):
             self.header_btm_bmp = self.header_btm.GetBitmap()
-            self.header_btm_min_bmp = getbitmap("theme/header_minimal", False)
+            self.header_btm_min_bmp = get_bitmap("theme/header_minimal", display_missing_icon=False)
         if self.Size[1] > 480 * scale:
             if self.header_btm.GetBitmap() is not self.header_btm_bmp:
                 self.header_btm.SetBitmap(self.header_btm_bmp)
@@ -3859,7 +3859,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             # that issue
             subst = BorderGradientButton(
                 parent=btn.Parent,
-                bitmap=geticon(16, "start"),
+                bitmap=get_icon(16, "start"),
                 label=btn.Label,
                 name=btn.Name,
             )
@@ -4090,7 +4090,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 msg=lang.getstr("app.confirm_restore_defaults"),
                 ok=lang.getstr("ok"),
                 cancel=lang.getstr("cancel"),
-                bitmap=getbitmap("theme/icons/32x32/dialog-warning"),
+                bitmap=get_bitmap("theme/icons/32x32/dialog-warning"),
             )
             result = dlg.ShowModal()
             dlg.Destroy()
@@ -5693,7 +5693,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 msg=lang.getstr("macos.bugs.cal.warning"),
                 ok=lang.getstr("yes"),
                 alt=lang.getstr("no"),
-                bitmap=geticon(32, "dialog-warning"),
+                bitmap=get_icon(32, "dialog-warning"),
             )
             result = dlg.ShowModal()
             dlg.Destroy()
@@ -5721,7 +5721,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             msg=lang.getstr("macos.bugs.profile.warning"),
             ok=lang.getstr("yes"),
             alt=lang.getstr("no"),
-            bitmap=geticon(32, "dialog-warning"),
+            bitmap=get_icon(32, "dialog-warning"),
         )
         result = dlg.ShowModal()
         dlg.Destroy()
@@ -5978,7 +5978,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             msg=msg,
             ok=lang.getstr("auto"),
             cancel=lang.getstr("cancel"),
-            bitmap=geticon(32, "dialog-information"),
+            bitmap=get_icon(32, "dialog-information"),
             alt=lang.getstr("file.select"),
         )
         needroot = self.worker.argyll_version < [1, 2, 0]
@@ -6213,7 +6213,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 msg=lang.getstr("calibration.do_not_use_video_lut.warning"),
                 ok=lang.getstr("yes"),
                 cancel=lang.getstr("no"),
-                bitmap=geticon(32, "dialog-warning"),
+                bitmap=get_icon(32, "dialog-warning"),
                 log=False,
             )
             result = dlg.ShowModal()
@@ -6382,7 +6382,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 msg=lang.getstr("argyll.debug.warning1"),
                 ok=lang.getstr("ok"),
                 cancel=lang.getstr("cancel"),
-                bitmap=geticon(32, "dialog-warning"),
+                bitmap=get_icon(32, "dialog-warning"),
                 log=False,
             )
             result = dlg.ShowModal()
@@ -6393,7 +6393,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             InfoDialog(
                 self,
                 msg=lang.getstr("argyll.debug.warning2"),
-                bitmap=geticon(32, "dialog-warning"),
+                bitmap=get_icon(32, "dialog-warning"),
                 log=False,
             )
         setcfg("argyll.debug", int(self.menuitem_enable_argyll_debug.IsChecked()))
@@ -6430,7 +6430,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 msg=lang.getstr("black_point_compensation.3dlut.warning"),
                 ok=lang.getstr("turn_off"),
                 cancel=lang.getstr("setting.keep_current"),
-                bitmap=geticon(32, "dialog-warning"),
+                bitmap=get_icon(32, "dialog-warning"),
             )
             if dlg.ShowModal() == wx.ID_OK:
                 setcfg("profile.black_point_compensation", 0)
@@ -6453,7 +6453,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             msg=lang.getstr("3dlut.confirm_relcol_rendering_intent"),
             ok=lang.getstr("yes"),
             cancel=lang.getstr("no"),
-            bitmap=geticon(32, "dialog-warning"),
+            bitmap=get_icon(32, "dialog-warning"),
         )
         result = dlg.ShowModal()
         dlg.Destroy()
@@ -6699,7 +6699,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 self,
                 msg=lang.getstr("quality.ultra.warning"),
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-warning"),
+                bitmap=get_icon(32, "dialog-warning"),
                 log=False,
             )
 
@@ -6822,7 +6822,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             msg=lang.getstr("warning.discard_changes"),
             ok=lang.getstr("ok"),
             cancel=lang.getstr("cancel"),
-            bitmap=geticon(32, "dialog-warning"),
+            bitmap=get_icon(32, "dialog-warning"),
         )
         result = dlg.ShowModal()
         dlg.Destroy()
@@ -7274,7 +7274,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 msg=lang.getstr("ambient.set"),
                 ok=lang.getstr("yes"),
                 cancel=lang.getstr("no"),
-                bitmap=geticon(32, "dialog-question"),
+                bitmap=get_icon(32, "dialog-question"),
             )
             set_ambient = dlg.ShowModal() == wx.ID_OK
             dlg.Destroy()
@@ -7297,7 +7297,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     msg=lang.getstr("whitepoint.set"),
                     ok=lang.getstr("yes"),
                     cancel=lang.getstr("no"),
-                    bitmap=geticon(32, "dialog-question"),
+                    bitmap=get_icon(32, "dialog-question"),
                 )
                 set_whitepoint = dlg.ShowModal() == wx.ID_OK
                 dlg.Destroy()
@@ -7420,7 +7420,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             self,
             msg=lang.getstr("calibration.ambient_viewcond_adjust.info"),
             ok=lang.getstr("ok"),
-            bitmap=geticon(32, "dialog-information"),
+            bitmap=get_icon(32, "dialog-information"),
             log=False,
         )
 
@@ -7897,7 +7897,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 msg=lang.getstr("trc.should_use_viewcond_adjust"),
                 ok=lang.getstr("turn_on"),
                 cancel=lang.getstr("cancel"),
-                bitmap=geticon(32, "dialog-information"),
+                bitmap=get_icon(32, "dialog-information"),
                 log=False,
             )
             chk = wx.CheckBox(dlg, -1, lang.getstr("dialog.do_not_show_again"))
@@ -7964,7 +7964,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 msg=lang.getstr("warning.already_exists", filename),
                 ok=lang.getstr("ok"),
                 cancel=lang.getstr("cancel"),
-                bitmap=geticon(32, "dialog-warning"),
+                bitmap=get_icon(32, "dialog-warning"),
             )
             result = dlg.ShowModal()
             dlg.Destroy()
@@ -7983,7 +7983,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             msg=lang.getstr("patch.layout.select"),
             ok=lang.getstr("ok"),
             cancel=lang.getstr("cancel"),
-            bitmap=geticon(32, "dialog-information"),
+            bitmap=get_icon(32, "dialog-information"),
         )
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         dlg.sizer3.Add(sizer, flag=wx.TOP, border=12)
@@ -8128,7 +8128,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             msg="icc.opensuse.org is not working anymore\n"
             "This functionality is temporarily disabled.",
             ok=lang.getstr("ok"),
-            bitmap=geticon(32, "dialog-error"),
+            bitmap=get_icon(32, "dialog-error"),
         )
         return
 
@@ -8151,7 +8151,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 getattr(self, "modaldlg", self),
                 msg=error,
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-error"),
+                bitmap=get_icon(32, "dialog-error"),
             )
             return
 
@@ -8207,7 +8207,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             msg=lang.getstr("profile.share.enter_info"),
             ok=lang.getstr("upload"),
             cancel=lang.getstr("cancel"),
-            bitmap=geticon(32, APPNAME + "-profile-info"),
+            bitmap=get_icon(32, APPNAME + "-profile-info"),
             alt=lang.getstr("save"),
             wrap=100,
         )
@@ -8430,7 +8430,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
         # border=8)
         # License link button
         # dlg.license_link_ctrl = wx.BitmapButton(dlg, -1,
-        # geticon(16, "dialog-information"),
+        # get_icon(16, "dialog-information"),
         # style=wx.NO_BORDER)
         # dlg.license_link_ctrl.SetToolTipString(lang.getstr("license"))
         # dlg.Bind(wx.EVT_BUTTON,
@@ -8547,7 +8547,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             parent,
             msg=lang.getstr("profile.share.success"),
             ok=lang.getstr("ok"),
-            bitmap=geticon(32, "dialog-information"),
+            bitmap=get_icon(32, "dialog-information"),
             show=False,
         )
         # Link to ICC Profile Taxi service
@@ -8593,7 +8593,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     msg=lang.getstr("dialog.confirm_uninstall"),
                     ok=lang.getstr("uninstall"),
                     cancel=lang.getstr("cancel"),
-                    bitmap=geticon(32, "dialog-warning"),
+                    bitmap=get_icon(32, "dialog-warning"),
                 )
                 dlgs.append(dlg)
                 dlg.sizer3.Add((0, 8))
@@ -8623,7 +8623,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                             msg=lang.getstr("warning.system_file", filename),
                             ok=lang.getstr("continue"),
                             cancel=lang.getstr("cancel"),
-                            bitmap=geticon(32, "dialog-warning"),
+                            bitmap=get_icon(32, "dialog-warning"),
                         )
                         dlgs.append(dlg)
                         result = dlg.ShowModal()
@@ -8690,7 +8690,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             msg=lang.getstr(msg),
             ok=lang.getstr(ok).replace("&", "&&"),
             cancel=lang.getstr("cancel"),
-            bitmap=geticon(32, "dialog-information"),
+            bitmap=get_icon(32, "dialog-information"),
         )
         dlg.launch_devman = wx.CheckBox(dlg, -1, lang.getstr("device_manager.launch"))
         dlg.launch_devman.SetValue(uninstall)
@@ -8770,7 +8770,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 self,
                 msg=lang.getstr("profile.invalid") + "\n" + profile_path,
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-error"),
+                bitmap=get_icon(32, "dialog-error"),
             )
             return
 
@@ -8784,7 +8784,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 + "\n"
                 + profile_path,
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-error"),
+                bitmap=get_icon(32, "dialog-error"),
             )
             return
         setcfg("calibration.file.previous", getcfg("calibration.file", False))
@@ -8847,7 +8847,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     self,
                     msg=lang.getstr("file.missing", path),
                     ok=lang.getstr("ok"),
-                    bitmap=geticon(32, "dialog-error"),
+                    bitmap=get_icon(32, "dialog-error"),
                 )
                 return
             setcfg("last_cal_or_icc_path", path)
@@ -8864,7 +8864,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                         self,
                         msg=lang.getstr("profile.invalid") + "\n" + path,
                         ok=lang.getstr("ok"),
-                        bitmap=geticon(32, "dialog-error"),
+                        bitmap=get_icon(32, "dialog-error"),
                     )
                     return
                 setcfg("last_icc_path", path)
@@ -8888,7 +8888,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                         self,
                         msg=lang.getstr("calibration.load_error") + "\n" + path,
                         ok=lang.getstr("ok"),
-                        bitmap=geticon(32, "dialog-error"),
+                        bitmap=get_icon(32, "dialog-error"),
                     )
             else:
                 setcfg("last_cal_path", path)
@@ -9096,7 +9096,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                         self,
                         msg=lang.getstr("calibration.reset_success"),
                         ok=lang.getstr("ok"),
-                        bitmap=geticon(32, "dialog-information"),
+                        bitmap=get_icon(32, "dialog-information"),
                         log=False,
                     )
                 else:
@@ -9104,7 +9104,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                         self,
                         msg=lang.getstr("calibration.load_success"),
                         ok=lang.getstr("ok"),
-                        bitmap=geticon(32, "dialog-information"),
+                        bitmap=get_icon(32, "dialog-information"),
                         log=False,
                     )
         elif not silent:
@@ -9116,7 +9116,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     self,
                     msg=lang.getstr("calibration.reset_error"),
                     ok=lang.getstr("ok"),
-                    bitmap=geticon(32, "dialog-error"),
+                    bitmap=get_icon(32, "dialog-error"),
                     log=False,
                 )
             else:
@@ -9124,7 +9124,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     self,
                     msg=lang.getstr("calibration.load_error"),
                     ok=lang.getstr("ok"),
-                    bitmap=geticon(32, "dialog-error"),
+                    bitmap=get_icon(32, "dialog-error"),
                     log=False,
                 )
         return result
@@ -9234,7 +9234,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     ok=lang.getstr("profile.current"),
                     cancel=lang.getstr("cancel"),
                     alt=lang.getstr("browse"),
-                    bitmap=geticon(32, APPNAME + "-profile-info"),
+                    bitmap=get_icon(32, APPNAME + "-profile-info"),
                 )
                 dlg.ok.SetDefault()
                 result = dlg.ShowModal()
@@ -9270,7 +9270,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 parent,
                 msg=lang.getstr("profile.invalid") + "\n" + path,
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-error"),
+                bitmap=get_icon(32, "dialog-error"),
             )
             return None
         if check_profile_class and (
@@ -9285,7 +9285,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 + "\n"
                 + path,
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-error"),
+                bitmap=get_icon(32, "dialog-error"),
             )
             return None
         return profile
@@ -9375,7 +9375,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     getattr(self, "reportframe", self),
                     msg=msg,
                     ok=lang.getstr("ok"),
-                    bitmap=geticon(32, "dialog-error"),
+                    bitmap=get_icon(32, "dialog-error"),
                 )
                 return
             else:
@@ -9607,7 +9607,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 msg=lang.getstr("dialog.confirm_overwrite", save_path),
                 ok=lang.getstr("overwrite"),
                 cancel=lang.getstr("cancel"),
-                bitmap=geticon(32, "dialog-warning"),
+                bitmap=get_icon(32, "dialog-warning"),
             )
             result = dlg.ShowModal()
             dlg.Destroy()
@@ -9697,7 +9697,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     getattr(self, "reportframe", self),
                     msg=lang.getstr("error.file.create", ti3_path),
                     ok=lang.getstr("ok"),
-                    bitmap=geticon(32, "dialog-error"),
+                    bitmap=get_icon(32, "dialog-error"),
                 )
                 self.worker.wrapup(False)
                 return
@@ -9819,7 +9819,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 getattr(self, "reportframe", self),
                 msg=lang.getstr("error.file.create", ti1_path),
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-error"),
+                bitmap=get_icon(32, "dialog-error"),
             )
             self.worker.wrapup(False)
             return
@@ -10614,7 +10614,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 ok=ok,
                 alt=lang.getstr("button.calibrate"),
                 cancel=lang.getstr("cancel"),
-                bitmap=geticon(32, "dialog-question"),
+                bitmap=get_icon(32, "dialog-question"),
             )
             result = dlg.ShowModal()
             dlg.Destroy()
@@ -10689,7 +10689,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     self,
                     msg=lang.getstr("calibration.complete"),
                     ok=lang.getstr("ok"),
-                    bitmap=geticon(32, "dialog-information"),
+                    bitmap=get_icon(32, "dialog-information"),
                 )
         elif isinstance(result, Exception):
             wx.CallAfter(show_result_dialog, result, self)
@@ -10699,7 +10699,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 self,
                 msg=lang.getstr("calibration.incomplete"),
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-error"),
+                bitmap=get_icon(32, "dialog-error"),
             )
         self.Show(start_timers=start_timers)
 
@@ -10789,7 +10789,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 msg=lang.getstr("patterngenerator.prisma.specify_host"),
                 ok=lang.getstr("continue"),
                 cancel=lang.getstr("cancel"),
-                bitmap=geticon(32, "dialog-question"),
+                bitmap=get_icon(32, "dialog-question"),
             )
             host = getcfg("patterngenerator.prisma.host")
             dlg.host = wx.ComboBox(dlg, -1, host)
@@ -10980,7 +10980,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     title=title,
                     msg=lang.getstr("please_wait"),
                     cancel=lang.getstr("cancel"),
-                    bitmap=geticon(32, "dialog-information"),
+                    bitmap=get_icon(32, "dialog-information"),
                 )
                 dlg.ok.Hide()
                 dlg.sizer0.SetSizeHints(dlg)
@@ -11033,7 +11033,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     title=title,
                     msg=logfile.read(),
                     cancel=lang.getstr("cancel"),
-                    bitmap=geticon(32, "dialog-information"),
+                    bitmap=get_icon(32, "dialog-information"),
                 )
                 dlg.ok.Hide()
                 dlg.sizer0.SetSizeHints(dlg)
@@ -11099,7 +11099,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                         self,
                         msg=str(exception),
                         ok=lang.getstr("ok"),
-                        bitmap=geticon(32, "dialog-warning"),
+                        bitmap=get_icon(32, "dialog-warning"),
                     )
                 else:
                     display = real_display_size_mm.get_x_display(display_no)
@@ -11157,7 +11157,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     self,
                     msg=str(stderr.strip()),
                     ok=lang.getstr("ok"),
-                    bitmap=geticon(32, "dialog-error"),
+                    bitmap=get_icon(32, "dialog-error"),
                 )
         else:
             self.call_pending_function()
@@ -11411,7 +11411,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 self,
                 msg=lang.getstr("profiling.incomplete"),
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-error"),
+                bitmap=get_icon(32, "dialog-error"),
             )
         self.Show(start_timers=start_timers)
 
@@ -11509,7 +11509,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                         self,
                         msg=lang.getstr("profile.invalid") + "\n" + cal,
                         ok=lang.getstr("ok"),
-                        bitmap=geticon(32, "dialog-error"),
+                        bitmap=get_icon(32, "dialog-error"),
                     )
                     self.start_timers()
                     return wx.ID_CANCEL
@@ -11542,7 +11542,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             msg=lang.getstr(msgstr, os.path.basename(cal) if cal else None),
             ok=lang.getstr("continue"),
             cancel=lang.getstr("cancel"),
-            bitmap=geticon(32, f"dialog-{icon}"),
+            bitmap=get_icon(32, f"dialog-{icon}"),
         )
         border = 12
         if can_use_current_cal or cal:
@@ -11908,7 +11908,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             msg=lang.getstr("measurements.complete"),
             ok=lang.getstr("ok"),
             cancel=lang.getstr("cancel"),
-            bitmap=geticon(32, "dialog-question"),
+            bitmap=get_icon(32, "dialog-question"),
         )
         if dlg.ShowModal() == wx.ID_OK:
             launch_file(os.path.dirname(path))
@@ -11960,7 +11960,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 self,
                 msg=lang.getstr("profiling.incomplete"),
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-error"),
+                bitmap=get_icon(32, "dialog-error"),
             )
         self.Show(start_timers=start_timers)
 
@@ -11998,7 +11998,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     self,
                     msg=failure_msg,
                     ok=lang.getstr("ok"),
-                    bitmap=geticon(32, "dialog-error"),
+                    bitmap=get_icon(32, "dialog-error"),
                 )
 
             if sys.platform == "darwin":
@@ -12036,7 +12036,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 self,
                 msg=lang.getstr("profile.invalid") + "\n" + profile_path,
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-error"),
+                bitmap=get_icon(32, "dialog-error"),
             )
             self.start_timers(True)
             setcfg("calibration.file.previous", None)
@@ -12048,7 +12048,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 self,
                 msg=lang.getstr("profiling.complete"),
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-information"),
+                bitmap=get_icon(32, "dialog-information"),
             )
             self.start_timers(True)
             setcfg("calibration.file.previous", None)
@@ -12188,7 +12188,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             title=title,
             ok=ok,
             cancel=cancel,
-            bitmap=geticon(32, APPNAME + "-profile-info"),
+            bitmap=get_icon(32, APPNAME + "-profile-info"),
             alt=share_profile,
         )
         if cinfo or vinfo:
@@ -12569,7 +12569,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 self,
                 msg=msg,
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, icon),
+                bitmap=get_icon(32, icon),
                 show=False,
             )
             if not all_good and linux:
@@ -12593,7 +12593,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                                 result_ = lang.getstr("failure")
                         result_ = wrap(str(result_))
                         sizer.Add(
-                            wx.StaticBitmap(dlg, -1, geticon(16, icon)),
+                            wx.StaticBitmap(dlg, -1, get_icon(16, icon)),
                             flag=wx.TOP,
                             border=2,
                         )
@@ -13483,12 +13483,12 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 ok=lang.getstr("colorimeter_correction.create"),
                 cancel=lang.getstr("cancel"),
                 # alt=lang.getstr("browse"),
-                bitmap=geticon(32, "dialog-information"),
+                bitmap=get_icon(32, "dialog-information"),
                 wrap=90,
             )
             boxsizer = wx.BoxSizer(wx.HORIZONTAL)
             dlg.sizer3.Add(boxsizer, 1, flag=wx.TOP | wx.EXPAND, border=12)
-            warning_icon = wx.StaticBitmap(dlg, -1, geticon(16, "dialog-warning"))
+            warning_icon = wx.StaticBitmap(dlg, -1, get_icon(16, "dialog-warning"))
             boxsizer.Add(warning_icon)
             warning_text = wx.StaticText(
                 dlg, -1, wrap(lang.getstr("colorimeter_correction.create.warning"), 86)
@@ -13695,7 +13695,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                         ti3 = None
                 if DEBUG or VERBOSE >= 2:
                     print(f"last_{name}_ti3_path =", ti3)
-                bmp = geticon(16, "checkmark") if ti3 else geticon(16, "empty")
+                bmp = get_icon(16, "checkmark") if ti3 else get_icon(16, "empty")
                 getattr(dlg, f"measure_{name}").SetBitmapLabel(bmp)
                 getattr(dlg, f"measure_{name}").Refresh()
                 getattr(dlg, f"measure_{name}")._bmp.SetToolTipString(ti3 or "")
@@ -13716,7 +13716,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             dlg.measure_reference = BitmapWithThemedButton(
                 dlg,
                 id_measure_reference,
-                geticon(16, "empty"),
+                get_icon(16, "empty"),
                 lang.getstr("measure"),
                 size=(-1, btn_h),
             )
@@ -13851,7 +13851,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             dlg.measure_colorimeter = BitmapWithThemedButton(
                 dlg,
                 id_measure_colorimeter,
-                geticon(16, "empty"),
+                get_icon(16, "empty"),
                 lang.getstr("measure"),
                 size=(-1, btn_h),
             )
@@ -14255,7 +14255,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                         title=lang.getstr("colorimeter_correction.create"),
                         msg=lang.getstr("error.measurement.file_invalid", path),
                         ok=lang.getstr("ok"),
-                        bitmap=geticon(32, "dialog-error"),
+                        bitmap=get_icon(32, "dialog-error"),
                     )
                     return None
                 else:
@@ -14309,7 +14309,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 title=lang.getstr("colorimeter_correction.create"),
                 msg=lang.getstr("error.measurement.one_reference"),
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-error"),
+                bitmap=get_icon(32, "dialog-error"),
             )
             return None
         if event:
@@ -14325,7 +14325,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     title=lang.getstr("colorimeter_correction.create"),
                     msg=lang.getstr("error.measurement.one_colorimeter"),
                     ok=lang.getstr("ok"),
-                    bitmap=geticon(32, "dialog-error"),
+                    bitmap=get_icon(32, "dialog-error"),
                 )
                 return None
             # Use only the device combinations from CCXX testchart
@@ -14409,7 +14409,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 title=lang.getstr("colorimeter_correction.create"),
                 msg=lang.getstr("error.measurement.missing_spectral"),
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-error"),
+                bitmap=get_icon(32, "dialog-error"),
             )
             return None
         # Add display type
@@ -14506,7 +14506,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 msg=lang.getstr("colorimeter_correction.create.details"),
                 ok=lang.getstr("ok"),
                 cancel=lang.getstr("cancel"),
-                bitmap=geticon(32, "dialog-information"),
+                bitmap=get_icon(32, "dialog-information"),
             )
             boxsizer = wx.StaticBoxSizer(
                 wx.StaticBox(dlg, -1, lang.getstr("description")), wx.VERTICAL
@@ -14588,11 +14588,11 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 dlg.display_tech_ctrl, flag=wx.ALL | wx.ALIGN_LEFT | wx.EXPAND, border=4
             )
             btn = PlateButton(
-                dlg, -1, lang.getstr("info.display_tech.show"), geticon(16, "info")
+                dlg, -1, lang.getstr("info.display_tech.show"), get_icon(16, "info")
             )
             hovercolor = btn._color["htxt"].GetAsString(wx.C2S_HTML_SYNTAX)
-            btn.SetBitmapHover(geticon(16, "info" + hovercolor))
-            btn.SetBitmapDisabled(get_bitmap_disabled(geticon(16, "info")))
+            btn.SetBitmapHover(get_icon(16, "info" + hovercolor))
+            btn.SetBitmapDisabled(get_bitmap_disabled(get_icon(16, "info")))
             btn.Bind(wx.EVT_BUTTON, self.display_tech_info_show_handler)
             boxsizer.Add(btn, flag=wx.ALL | wx.ALIGN_LEFT, border=4)
             dlg.description_txt_ctrl.SetFocus()
@@ -14876,7 +14876,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     msg=lang.getstr("colorimeter_correction.create.success"),
                     ok=lang.getstr("save"),
                     cancel=lang.getstr("testchart.discard"),
-                    bitmap=geticon(32, "dialog-information"),
+                    bitmap=get_icon(32, "dialog-information"),
                 )
                 sizer = wx.BoxSizer(wx.HORIZONTAL)
                 dlg.sizer3.Add(sizer, 1, flag=wx.TOP | wx.EXPAND, border=12)
@@ -15153,7 +15153,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 + "\n"
                 + "".join(self.worker.errors),
                 ok=lang.getstr("cancel"),
-                bitmap=geticon(32, "dialog-error"),
+                bitmap=get_icon(32, "dialog-error"),
                 log=False,
             )
         self.worker.wrapup(False)
@@ -15170,17 +15170,17 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             msg=lang.getstr("colorimeter_correction.upload.confirm"),
             ok=lang.getstr("ok"),
             cancel=lang.getstr("cancel"),
-            bitmap=geticon(32, "dialog-information"),
+            bitmap=get_icon(32, "dialog-information"),
         )
         dlg.info = PlateButton(
             dlg.buttonpanel,
             -1,
             lang.getstr("colorimeter_correction.info"),
-            geticon(16, "info"),
+            get_icon(16, "info"),
         )
         hovercolor = dlg.info._color["htxt"].GetAsString(wx.C2S_HTML_SYNTAX)
-        dlg.info.SetBitmapHover(geticon(16, "info" + hovercolor))
-        dlg.info.SetBitmapDisabled(get_bitmap_disabled(geticon(16, "info")))
+        dlg.info.SetBitmapHover(get_icon(16, "info" + hovercolor))
+        dlg.info.SetBitmapDisabled(get_bitmap_disabled(get_icon(16, "info")))
 
         def show_ccxx_info(event):
             self.colorimeter_correction_info_handler(event, cgats)
@@ -15259,7 +15259,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 self,
                 msg=lang.getstr("colorimeter_correction.upload.deny"),
                 ok=lang.getstr("cancel"),
-                bitmap=geticon(32, "dialog-error"),
+                bitmap=get_icon(32, "dialog-error"),
             )
         else:
             self.upload_colorimeter_correction(cgats)
@@ -15343,7 +15343,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             msg=msg,
             ok=lang.getstr("auto"),
             cancel=lang.getstr("cancel"),
-            bitmap=geticon(32, "dialog-information"),
+            bitmap=get_icon(32, "dialog-information"),
             alt=lang.getstr("file.select"),
         )
         dlg.sizer3.Add((1, 8))
@@ -15906,7 +15906,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     "colorimeter_correction.import.success", "\n".join(imported)
                 ),
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-information"),
+                bitmap=get_icon(32, "dialog-information"),
             )
         if failures or (not imported and result is not None):
             error = "".join(self.worker.errors) or lang.getstr(
@@ -16250,8 +16250,8 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 f"{event.GetId()} {getevtobjname(event, self)} event type "
                 f"{event.GetEventType()} {getevttype(event)}"
             )
-        bitmap_link = geticon(16, "stock_lock")
-        bitmap_unlink = geticon(16, "stock_lock-open")
+        bitmap_link = get_icon(16, "stock_lock")
+        bitmap_unlink = get_icon(16, "stock_lock-open")
         if link is None:
             link = not bool(int(getcfg("display_lut.link")))
         link = not len(self.worker.displays) or (
@@ -16311,7 +16311,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             msg=lang.getstr(id_str),
             cols=1,
             title=lang.getstr("display.tech"),
-            bitmap=geticon(32, "dialog-information"),
+            bitmap=get_icon(32, "dialog-information"),
             wrap=wrap,
             use_header=False,
             show=False,
@@ -16329,12 +16329,12 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             w.panel,
             -1,
             lang.getstr("info.display_tech.linklabel.displayspecifications.com"),
-            geticon(16, "web"),
+            get_icon(16, "web"),
         )
         link1.SetMaxFontSize(11)
         hovercolor = link1._color["htxt"].GetAsString(wx.C2S_HTML_SYNTAX)
-        link1.SetBitmapHover(geticon(16, "web" + hovercolor))
-        link1.SetBitmapDisabled(get_bitmap_disabled(geticon(16, "web")))
+        link1.SetBitmapHover(get_icon(16, "web" + hovercolor))
+        link1.SetBitmapDisabled(get_bitmap_disabled(get_icon(16, "web")))
         if sys.platform == "darwin":
             # Prevent initial highlited state
             link1.Unbind(wx.EVT_SET_FOCUS)
@@ -16352,12 +16352,12 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             w.panel,
             -1,
             lang.getstr("info.display_tech.linklabel.everymac.com"),
-            geticon(16, "web"),
+            get_icon(16, "web"),
         )
         link2.SetMaxFontSize(11)
         hovercolor = link2._color["htxt"].GetAsString(wx.C2S_HTML_SYNTAX)
-        link2.SetBitmapHover(geticon(16, "web" + hovercolor))
-        link2.SetBitmapDisabled(get_bitmap_disabled(geticon(16, "web")))
+        link2.SetBitmapHover(get_icon(16, "web" + hovercolor))
+        link2.SetBitmapDisabled(get_bitmap_disabled(get_icon(16, "web")))
         if sys.platform == "darwin":
             # Prevent initial highlited state
             link2.Unbind(wx.EVT_SET_FOCUS)
@@ -16397,7 +16397,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 self,
                 msg=lang.getstr("projector_mode_unavailable"),
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-information"),
+                bitmap=get_icon(32, "dialog-information"),
             )
         if (v and "V" in v and self.worker.argyll_version < [1, 1, 0]) or (
             self.worker.argyll_version[0:3] == [1, 1, 0]
@@ -16418,7 +16418,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 self,
                 msg=lang.getstr("adaptive_mode_unavailable"),
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-information"),
+                bitmap=get_icon(32, "dialog-information"),
             )
         cal_changed = (
             v != getcfg("measurement_mode")
@@ -16464,7 +16464,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 msg=lang.getstr(msg),
                 ok=ok,
                 cancel=lang.getstr(cancel),
-                bitmap=geticon(32, "dialog-question"),
+                bitmap=get_icon(32, "dialog-question"),
             )
             chk = wx.CheckBox(dlg, -1, lang.getstr("dialog.do_not_show_again"))
             dlg.Bind(
@@ -16589,7 +16589,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             msg=lang.getstr("profile.testchart_recommendation"),
             ok=lang.getstr("OK"),
             cancel=lang.getstr("cancel"),
-            bitmap=geticon(32, "dialog-question"),
+            bitmap=get_icon(32, "dialog-question"),
         )
         result = dlg.ShowModal()
         self.profile_quality_ctrl.Enable(
@@ -16619,7 +16619,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 msg=lang.getstr("measurement_file.check_sanity.auto.warning"),
                 ok=lang.getstr("ok"),
                 cancel=lang.getstr("cancel"),
-                bitmap=geticon(32, "dialog-warning"),
+                bitmap=get_icon(32, "dialog-warning"),
                 log=False,
             )
             result = dlg.ShowModal()
@@ -16700,7 +16700,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 msg=lang.getstr("profile.confirm_regeneration"),
                 ok=lang.getstr("ok"),
                 cancel=lang.getstr("cancel"),
-                bitmap=geticon(32, "dialog-information"),
+                bitmap=get_icon(32, "dialog-information"),
             )
             dlg.Center()
             result = dlg.ShowModal()
@@ -16933,7 +16933,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 ok=lang.getstr("no"),
                 alt=lang.getstr("yes"),
                 cancel=lang.getstr("cancel"),
-                bitmap=geticon(32, "dialog-question"),
+                bitmap=get_icon(32, "dialog-question"),
             )
             result = dlg.ShowModal()
             if result == wx.ID_CANCEL:
@@ -17076,7 +17076,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 msg=self.profile_name_info(),
                 cols=2,
                 title=lang.getstr("profile.name"),
-                bitmap=geticon(32, "dialog-information"),
+                bitmap=get_icon(32, "dialog-information"),
             )
         else:
             self.profile_name_tooltip_window.Show()
@@ -17146,7 +17146,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             dlg = ConfirmDialog(
                 self,
                 msg=lang.getstr("profile.b2a.lowres.warning"),
-                bitmap=geticon(32, "dialog-warning"),
+                bitmap=get_icon(32, "dialog-warning"),
             )
             choice = dlg.ShowModal()
             if choice == wx.ID_OK:
@@ -17300,7 +17300,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     self,
                     msg=lang.getstr("file.missing", path_),
                     ok=lang.getstr("ok"),
-                    bitmap=geticon(32, "dialog-error"),
+                    bitmap=get_icon(32, "dialog-error"),
                 )
                 return
             tags = {}
@@ -17315,7 +17315,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                         self,
                         msg=f"{lang.getstr('profile.invalid')}\n{path_}",
                         ok=lang.getstr("ok"),
-                        bitmap=geticon(32, "dialog-error"),
+                        bitmap=get_icon(32, "dialog-error"),
                     )
                     return
                 if (profile.tags.get("CIED", "") or profile.tags.get("targ", ""))[
@@ -17325,7 +17325,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                         self,
                         msg=f"{lang.getstr('profile.no_embedded_ti3')}\n{path_}",
                         ok=lang.getstr("ok"),
-                        bitmap=geticon(32, "dialog-error"),
+                        bitmap=get_icon(32, "dialog-error"),
                     )
                     return
                 with BytesIO(
@@ -17345,7 +17345,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                         self,
                         msg=lang.getstr("error.file.open", path_),
                         ok=lang.getstr("ok"),
-                        bitmap=geticon(32, "dialog-error"),
+                        bitmap=get_icon(32, "dialog-error"),
                     )
                     return
             if b"CAL" not in ti3_lines:
@@ -17354,7 +17354,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     msg=lang.getstr("dialog.ti3_no_cal_info"),
                     ok=lang.getstr("continue"),
                     cancel=lang.getstr("cancel"),
-                    bitmap=geticon(32, "dialog-warning"),
+                    bitmap=get_icon(32, "dialog-warning"),
                 )
                 result = dlg.ShowModal()
                 dlg.Destroy()
@@ -17414,7 +17414,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     msg=lang.getstr("dialog.confirm_overwrite", (profile_save_path)),
                     ok=lang.getstr("overwrite"),
                     cancel=lang.getstr("cancel"),
-                    bitmap=geticon(32, "dialog-warning"),
+                    bitmap=get_icon(32, "dialog-warning"),
                 )
                 result = dlg.ShowModal()
                 dlg.Destroy()
@@ -17576,7 +17576,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 self,
                 msg=str(exception),
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-error"),
+                bitmap=get_icon(32, "dialog-error"),
             )
         else:
             if getcfg("profile.create_gamut_views"):
@@ -18352,7 +18352,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 self,
                 msg=lang.getstr("file.missing", path),
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-error"),
+                bitmap=get_icon(32, "dialog-error"),
             )
             return
         filename, ext = os.path.splitext(path)
@@ -18364,7 +18364,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     self,
                     msg=lang.getstr("profile.invalid") + "\n" + path,
                     ok=lang.getstr("ok"),
-                    bitmap=geticon(32, "dialog-error"),
+                    bitmap=get_icon(32, "dialog-error"),
                 )
                 return
             ti3_lines = [
@@ -18378,7 +18378,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     self,
                     msg=lang.getstr("profile.no_embedded_ti3") + "\n" + path,
                     ok=lang.getstr("ok"),
-                    bitmap=geticon(32, "dialog-error"),
+                    bitmap=get_icon(32, "dialog-error"),
                 )
                 return
         self.set_testchart(path)
@@ -18528,7 +18528,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                         self,
                         msg=lang.getstr("error.testchart.missing", ti1),
                         ok=lang.getstr("ok"),
-                        bitmap=geticon(32, "dialog-error"),
+                        bitmap=get_icon(32, "dialog-error"),
                     )
                 elif VERBOSE >= 1:
                     print(lang.getstr("error.testchart.missing", ti1))
@@ -18662,7 +18662,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     self,
                     msg=msg,
                     ok=lang.getstr("ok"),
-                    bitmap=geticon(32, "dialog-error"),
+                    bitmap=get_icon(32, "dialog-error"),
                 )
                 self.set_default_testchart(force=True)
                 return
@@ -18693,7 +18693,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 self,
                 msg=lang.getstr("error.testchart.read", path) + "\n\n" + str(error),
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-error"),
+                bitmap=get_icon(32, "dialog-error"),
             )
             self.set_default_testchart(force=True)
         else:
@@ -19167,7 +19167,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 self,
                 msg=lang.getstr("file.missing", path),
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-error"),
+                bitmap=get_icon(32, "dialog-error"),
             )
             return
 
@@ -19189,7 +19189,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     self,
                     msg=lang.getstr("profile.invalid") + "\n" + path,
                     ok=lang.getstr("ok"),
-                    bitmap=geticon(32, "dialog-error"),
+                    bitmap=get_icon(32, "dialog-error"),
                 )
                 return
             if profile.profileClass != b"mntr" or profile.colorSpace != b"RGB":
@@ -19205,7 +19205,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     + "\n"
                     + path,
                     ok=lang.getstr("ok"),
-                    bitmap=geticon(32, "dialog-error"),
+                    bitmap=get_icon(32, "dialog-error"),
                 )
                 return
 
@@ -19226,7 +19226,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                         self,
                         msg=lang.getstr("profile.no_targ") + "\n" + path,
                         ok=lang.getstr("ok"),
-                        bitmap=geticon(32, "dialog-error"),
+                        bitmap=get_icon(32, "dialog-error"),
                     )
                     return
         else:
@@ -19238,7 +19238,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     self,
                     msg=lang.getstr("error.file.open", path),
                     ok=lang.getstr("ok"),
-                    bitmap=geticon(32, "dialog-error"),
+                    bitmap=get_icon(32, "dialog-error"),
                 )
                 return
         setcfg("last_cal_or_icc_path", path)
@@ -19342,7 +19342,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     self,
                     msg="{}\n{}".format(lang.getstr("calibration.file.invalid"), path),
                     ok=lang.getstr("ok"),
-                    bitmap=geticon(32, "dialog-error"),
+                    bitmap=get_icon(32, "dialog-error"),
                 )
                 return
         black_point_correction = False
@@ -19883,7 +19883,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
 
             # if not silent:
             # InfoDialog(self, msg=msg + "\n" + path, ok=lang.getstr("ok"),
-            # bitmap=geticon(32, "dialog-information"))
+            # bitmap=get_icon(32, "dialog-information"))
             return
         if ext.lower() in (".icc", ".icm"):
             sel = self.calibration_file_ctrl.GetSelection()
@@ -19907,7 +19907,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     self,
                     msg=lang.getstr("no_settings") + "\n" + path,
                     ok=lang.getstr("ok"),
-                    bitmap=geticon(32, "dialog-error"),
+                    bitmap=get_icon(32, "dialog-error"),
                 )
             return
 
@@ -19946,7 +19946,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                             self,
                             msg=lang.getstr("calibration.file.invalid") + "\n" + path,
                             ok=lang.getstr("ok"),
-                            bitmap=geticon(32, "dialog-error"),
+                            bitmap=get_icon(32, "dialog-error"),
                         )
                         return
                 elif line[0] == "DEVICE_TYPE":
@@ -20065,7 +20065,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 self,
                 msg=msg + "\n" + path,
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-information"),
+                bitmap=get_icon(32, "dialog-information"),
             )
             if (
                 load_vcgt
@@ -20092,7 +20092,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 self,
                 msg=str(exception),
                 ok=lang.getstr("ok"),
-                bitmap=geticon(32, "dialog-error"),
+                bitmap=get_icon(32, "dialog-error"),
             )
             return
         self.related_files = {}
@@ -20111,7 +20111,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             msg=lang.getstr("dialog.confirm_delete"),
             ok=lang.getstr("delete"),
             cancel=lang.getstr("cancel"),
-            bitmap=geticon(32, "dialog-warning"),
+            bitmap=get_icon(32, "dialog-warning"),
         )
         if self.related_files:
             scale = getcfg("app.dpi") / config.get_default_dpi()
@@ -20196,14 +20196,14 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                             for related_file in orphan_related_files
                         ),
                         ok=lang.getstr("ok"),
-                        bitmap=geticon(32, "dialog-error"),
+                        bitmap=get_icon(32, "dialog-error"),
                     )
             except OSError as exc:
                 InfoDialog(
                     self,
                     msg=f"{lang.getstr('error.deletion', trashcan)}\n\n{exc!s}",
                     ok=lang.getstr("ok"),
-                    bitmap=geticon(32, "dialog-error"),
+                    bitmap=get_icon(32, "dialog-error"),
                 )
             # The case-sensitive index could fail because of
             # case-insensitive file systems, e.g. if the
@@ -20263,7 +20263,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
         items.append(
             get_header(
                 self.aboutdialog.panel,
-                getbitmap("theme/header", False),
+                get_bitmap("theme/header", display_missing_icon=False),
                 label=wrap(lang.getstr("header"), 32),
                 size=(320, 120),
                 repeat_sub_bitmap_h=(220, 0, 2, 184),
@@ -20667,7 +20667,7 @@ class StartupFrame(start_cls):
             # Setup shape. Required to get rid of window shadow under Ubuntu.
             # Note that shaped windows seem to be broken (won't show at all)
             # with wxGTK 2.8.12.0 and possibly earlier.
-            self.mask_bmp = getbitmap("theme/splash-mask")
+            self.mask_bmp = get_bitmap("theme/splash-mask")
             if wx.Platform == "__WXGTK__":
                 # wxGTK requires that the window be created before you can
                 # set its shape, so delay the call to SetWindowShape until
@@ -20680,10 +20680,10 @@ class StartupFrame(start_cls):
                 self.SetWindowShape()
 
         # Setup splash screen
-        self.splash_bmp = getbitmap("theme/splash")
+        self.splash_bmp = get_bitmap("theme/splash")
         self.splash_anim = []
         for pth in get_data_path("theme/splash_anim", r"\.png$") or []:
-            self.splash_anim.append(getbitmap(os.path.splitext(pth)[0]))
+            self.splash_anim.append(get_bitmap(os.path.splitext(pth)[0]))
         self.zoom_scales = []
         if getcfg("splash.zoom"):
             # Zoom in instead of fade
@@ -20699,7 +20699,7 @@ class StartupFrame(start_cls):
             self.zoom_scales.append(1.0)
         # Fade in major version number
         self.splash_version_anim = []
-        splash_version = getbitmap("theme/splash_version")
+        splash_version = get_bitmap("theme/splash_version")
         if splash_version:
             im = splash_version.ConvertToImage()
             for alpha in [0, 0.2, 0.4, 0.6, 0.8, 1, 0.95, 0.9, 0.85, 0.8, 0.75]:
@@ -21261,7 +21261,7 @@ class MeasurementFileCheckSanityDialog(ConfirmDialog):
             ok=lang.getstr("ok"),
             cancel=lang.getstr("cancel"),
             alt=lang.getstr("invert_selection"),
-            bitmap=geticon(32, "dialog-warning"),
+            bitmap=get_icon(32, "dialog-warning"),
             wrap=120,
         )
         msg_col1 = lang.getstr("warning.suspicious_delta_e")
