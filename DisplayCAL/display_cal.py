@@ -378,7 +378,7 @@ def swap_dict_keys_values(mydict):
     return dict([(v, k) for (k, v) in mydict.items()])
 
 def is_new_update():
-    """Check for new updates on GitHub. 
+    """Check for new updates on GitHub.
     Returns the latest version tuple if a new update is found,
     returns false otherwise."""
     try:
@@ -393,7 +393,7 @@ def is_new_update():
         latest_version_string = data["tag_name"]
         latest_version = latest_version_string.split('.')
         latest_version_tuple = tuple(int(n) for n in latest_version)
-        current_version = VERSION[0], VERSION[1], VERSION[2]
+        current_version = VERSION_TUPLE[0], VERSION_TUPLE[1], VERSION_TUPLE[2]
 
         # Compare version numbers
         for latest, current in zip(latest_version, current_version):
@@ -449,11 +449,11 @@ def app_update_check(parent=None, silent=False, snapshot=False, argyll=False):
                 parent.check_instrument_setup, check_donation, (parent, snapshot)
             )
         return
-    
+
     #HACK: Unsure why this is here, but it breaks the tests when headless
     #if not wx.GetApp():
     #    return
-    
+
     try:
         new_version_tuple = resp
     except ValueError:
@@ -783,7 +783,7 @@ def app_update_confirm(
             )
         return
     elif result != wx.ID_CANCEL:
-        launch_file(development_home_page)
+        launch_file(DEVELOPMENT_HOME_PAGE)
     elif not argyll:
         # Check for Argyll update
         if check_argyll_bin():
