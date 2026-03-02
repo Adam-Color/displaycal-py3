@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import calendar
 import codecs
 import glob
 import os
@@ -17,7 +16,10 @@ from textwrap import fill
 from time import gmtime, strftime
 
 if sys.platform == "win32":
-    import msilib
+    try:
+        import msilib
+    except ModuleNotFoundError:
+        msilib = None
 
 
 pypath = Path(__file__).resolve()
@@ -28,11 +30,12 @@ sys.path.insert(1, str(pydir))
 
 
 def create_appdmg(zeroinstall=False):
+    from DisplayCAL.meta import NAME, VERSION_STRING
     if zeroinstall:
-        dmgname = name + "-0install"
+        dmgname = f"{NAME}-0install"
         srcdir = "0install"
     else:
-        dmgname = name + "-" + version
+        dmgname = f"{NAME}-{VERSION_STRING}"
         srcdir = f"py2app.{get_platform()}-py{sys.version_info[0]}.{sys.version_info[1]}"
 
     retcode = subprocess.call(
@@ -131,42 +134,44 @@ def format_changelog(changelog, fmt="appstream"):
         changelog = ""
 
         for lvl1 in tree:
-            if lvl1.tag in ("ol", "ul"):
-                for lvl2 in lvl1:
-                    if lvl2.tag == "li":
-                        changelog = f"{changelog}  * {lvl2.text.lstrip()}"
-                        links = []
-                        link_cnt = 1
+            if lvl1.tag not in ("ol", "ul"):
+                continue
+            for lvl2 in lvl1:
+                if lvl2.tag != "li":
+                    continue
+                changelog = f"{changelog}  * {lvl2.text.lstrip()}"
+                links = []
+                link_cnt = 1
 
-                        for lvl3 in lvl2:
-                            if lvl3.tag in ("ol", "ul"):
-                                if not changelog.endswith("\n"):
-                                    changelog = f"{changelog}\n"
-
-                                for lvl4 in lvl3:
-                                    if lvl4.tag == "li":
-                                        changelog += f"    {lvl4.text.lstrip()}"
-
-                                        for lvl5 in lvl4:
-                                            if lvl5.tag == "a":
-                                                # Collect links
-                                                links.append(lvl5.attrib["href"])
-                                                changelog = f"{changelog}{lvl5.text.strip()}[{link_cnt}]{lvl5.tail}"
-                                                link_cnt += 1
-
-                                        if not changelog.endswith("\n"):
-                                            changelog = f"{changelog}\n"
-                            elif lvl3.tag == "a":
-                                # Collect links
-                                links.append(lvl3.attrib["href"])
-                                changelog = f"{changelog}{lvl3.text.strip()}[{link_cnt}]{lvl3.tail}"
-                                link_cnt += 1
-
+                for lvl3 in lvl2:
+                    if lvl3.tag in ("ol", "ul"):
                         if not changelog.endswith("\n"):
                             changelog = f"{changelog}\n"
 
-                        for n, link in enumerate(links, 1):
-                            changelog = f"{changelog}    [{n}] {link}\n"
+                        for lvl4 in lvl3:
+                            if lvl4.tag == "li":
+                                changelog += f"    {lvl4.text.lstrip()}"
+
+                                for lvl5 in lvl4:
+                                    if lvl5.tag == "a":
+                                        # Collect links
+                                        links.append(lvl5.attrib["href"])
+                                        changelog = f"{changelog}{lvl5.text.strip()}[{link_cnt}]{lvl5.tail}"
+                                        link_cnt += 1
+
+                                if not changelog.endswith("\n"):
+                                    changelog = f"{changelog}\n"
+                    elif lvl3.tag == "a":
+                        # Collect links
+                        links.append(lvl3.attrib["href"])
+                        changelog = f"{changelog}{lvl3.text.strip()}[{link_cnt}]{lvl3.tail}"
+                        link_cnt += 1
+
+                if not changelog.endswith("\n"):
+                    changelog = f"{changelog}\n"
+
+                for n, link in enumerate(links, 1):
+                    changelog = f"{changelog}    [{n}] {link}\n"
 
         # Wrap each line to 67 chars
         changelog = changelog.splitlines()
@@ -191,7 +196,6 @@ def format_changelog(changelog, fmt="appstream"):
                 if lvl1.tag == "p":
                     if nump == maxp:
                         continue
-
                     nump += 1
 
                 changelog = f"{changelog}\t\t\t\t<{lvl1.tag}>\n"
@@ -200,58 +204,56 @@ def format_changelog(changelog, fmt="appstream"):
                     changelog = f"{changelog}\t\t\t\t\t{escape(text)}\n"
 
                 for lvl2 in lvl1:
-                    if lvl2.tag == "li":
-                        changelog = f"{changelog}\t\t\t\t\t<li>\n\t\t\t\t\t\t{escape(lvl2.text.strip())}\n"
+                    if lvl2.tag != "li":
+                        continue
+                    changelog = f"{changelog}\t\t\t\t\t<li>\n\t\t\t\t\t\t{escape(lvl2.text.strip())}\n"
 
-                        for lvl3 in lvl2:
-                            if lvl3.tag in {"p", "ol", "ul"}:
-                                text = lvl3.text.strip()
+                    for lvl3 in lvl2:
+                        if lvl3.tag in {"p", "ol", "ul"}:
+                            text = lvl3.text.strip()
 
-                                if lvl3.tag == "p":
-                                    if nump == maxp:
-                                        continue
+                            if lvl3.tag == "p":
+                                if nump == maxp:
+                                    continue
+                                nump += 1
 
-                                    nump += 1
+                            changelog = f"{changelog}\t\t\t\t\t\t<{lvl3.tag}>\n"
 
-                                changelog = f"{changelog}\t\t\t\t\t\t<{lvl3.tag}>\n"
+                            if text:
+                                changelog = (
+                                    f"{changelog}\t\t\t\t\t\t\t{escape(text)}\n"
+                                )
 
-                                if text:
-                                    changelog = (
-                                        f"{changelog}\t\t\t\t\t\t\t{escape(text)}\n"
-                                    )
+                            for lvl4 in lvl3:
+                                if lvl4.tag == "li":
+                                    changelog = f"{changelog}\t\t\t\t\t\t\t<li>{escape(lvl4.text.strip())}</li>\n"
 
-                                for lvl4 in lvl3:
-                                    if lvl4.tag == "li":
-                                        changelog = f"{changelog}\t\t\t\t\t\t\t<li>{escape(lvl4.text.strip())}</li>\n"
-
-                                changelog = f"{changelog}\t\t\t\t\t\t</{lvl3.tag}>\n"
-
-                        changelog = f"{changelog}\t\t\t\t\t</li>\n"
-
+                            changelog = f"{changelog}\t\t\t\t\t\t</{lvl3.tag}>\n"
+                    changelog = f"{changelog}\t\t\t\t\t</li>\n"
                 changelog = f"{changelog}\t\t\t\t</{lvl1.tag}>\n"
-
         changelog = changelog.rstrip()
 
     return changelog
 
 
 def replace_placeholders(
-    tmpl_path: Path, out_path: Path, lastmod_time=0, iterable=None
+    tmpl_path: Path, out_path: Path, lastmod_time= 0, iterable=None
 ):
-    global longdesc
+    global LONG_DESCRIPTION
+    import DisplayCAL
 
     with codecs.open(str(tmpl_path), "r", "UTF-8") as tmpl:
         tmpl_data = tmpl.read()
 
     if Path(tmpl_path).name.startswith("debian"):
-        longdesc_backup = longdesc
-        longdesc = "\n".join(
-            [" " + (line if line.strip() else ".") for line in longdesc.splitlines()]
+        longdesc_backup = LONG_DESCRIPTION
+        LONG_DESCRIPTION = "\n".join(
+            [" " + (line if line.strip() else ".") for line in LONG_DESCRIPTION.splitlines()]
         )
 
     appdatadesc = (
         "\n\t\t\t"
-        + longdesc.replace("\n", "\n\t\t\t").replace(".\n", ".\n\t\t</p>\n\t\t<p>\n")
+        + LONG_DESCRIPTION.replace("\n", "\n\t\t\t").replace(".\n", ".\n\t\t</p>\n\t\t<p>\n")
         + "\n\t\t"
     )
     mapping = {
@@ -264,7 +266,7 @@ def replace_placeholders(
             "%a %b %d %H:%M:%S UTC %Y",
             gmtime(lastmod_time or os.stat(tmpl_path).st_mtime),
         ),
-        "DEBPACKAGE": name.lower(),
+        "DEBPACKAGE": NAME.lower(),
         # e.g. Wed, 07 Jul 2010 15:25:00 +0100
         "DEBDATETIME": strftime(
             "%a, %d %b %Y %H:%M:%S ",
@@ -284,28 +286,28 @@ def replace_placeholders(
             "%H:%M", gmtime(lastmod_time or os.stat(tmpl_path).st_mtime)
         ),
         "TIMESTAMP": str(int(lastmod_time)),
-        "SUMMARY": description,
-        "LONG_DESCRIPTION": description,
-        "DESC": longdesc,
+        "SUMMARY": DESCRIPTION,
+        "LONG_DESCRIPTION": DESCRIPTION,
+        "DESC": LONG_DESCRIPTION,
         "APPDATADESC": f'<p>{appdatadesc}</p>\n\t\t<p xml:lang="en">{appdatadesc}</p>',
-        "APPNAME": name,
-        "APPNAME_HTML": name_html,
-        "APPNAME_LOWER": name.lower(),
-        "APPSTREAM_ID": appstream_id,
-        "AUTHOR": author,
-        "AUTHOR_EMAIL": author_email,
-        "MAINTAINER": author,
-        "MAINTAINER_EMAIL": author_email,
-        "MAINTAINER_EMAIL_SHA1": sha1(author_email.encode("utf-8")).hexdigest(),
-        "PACKAGE": name,
-        "PY_MAXVERSION": ".".join(str(n) for n in py_maxversion),
-        "PY_MINVERSION": ".".join(str(n) for n in py_minversion),
-        "VERSION": version,
-        "VERSION_SHORT": re.sub(r"(?:\.0){1,2}$", "", version),
+        "APPNAME": NAME,
+        "APPNAME_HTML": NAME_HTML,
+        "APPNAME_LOWER": NAME.lower(),
+        "APPSTREAM_ID": APPSTREAM_ID,
+        "AUTHOR": AUTHOR,
+        "AUTHOR_EMAIL": AUTHOR_EMAIL,
+        "MAINTAINER": AUTHOR,
+        "MAINTAINER_EMAIL": AUTHOR_EMAIL,
+        "MAINTAINER_EMAIL_SHA1": sha1(AUTHOR_EMAIL.encode("utf-8")).hexdigest(),
+        "PACKAGE": NAME,
+        "PY_MAXVERSION": ".".join(str(n) for n in PY_MAXVERSION),
+        "PY_MINVERSION": ".".join(str(n) for n in PY_MINVERSION),
+        "VERSION": VERSION_STRING,
+        "VERSION_SHORT": re.sub(r"(?:\.0){1,2}$", "", VERSION_STRING),
         "URL": f"https://{DOMAIN.lower()}/",
         # For share counts...
         "HTTPURL": f"http://{DOMAIN.lower()}/",
-        "WX_MINVERSION": ".".join(str(n) for n in wx_minversion),
+        "WX_MINVERSION": ".".join(str(n) for n in WX_MINVERSION),
         "YEAR": strftime("%Y", gmtime(lastmod_time or os.stat(tmpl_path).st_mtime)),
     }
     mapping.update(iterable or {})
@@ -319,7 +321,7 @@ def replace_placeholders(
     )
 
     if Path(tmpl_path).name.startswith("debian"):
-        longdesc = longdesc_backup
+        LONG_DESCRIPTION = longdesc_backup
 
     out_path = Path(out_path)
 
@@ -445,139 +447,52 @@ def setup():
 
     from DisplayCAL.util_os import which
 
-    if (
-        Path(pydir, ".git").is_dir()
-        and (which("git") or which("git.exe"))
-        and (not sys.argv[1:] or (len(non_build_args) < len(sys.argv[1:]) and not help))
-    ):
-        print("Trying to get git version information...")
-        git_version = None
-
-        try:
-            p = subprocess.Popen(
-                ["git", "rev-parse", "--short", "HEAD"],
-                stdout=subprocess.PIPE,
-                cwd=pydir,
-            )
-        except Exception as exception:
-            print("...failed:", exception)
-        else:
-            git_version = p.communicate()[0].strip().decode()
-            version_base_file_path = Path(pydir, "VERSION_BASE")
-            version_base = "0.0.0".split(".")
-
-            if version_base_file_path.is_file():
-                with open(version_base_file_path) as version_base_file:
-                    version_base = version_base_file.read().strip().split(".")
-
-        print("Trying to get git information...")
-        lastmod = ""
-        timestamp = None
-        mtime = 0
-
-        try:
-            p = subprocess.Popen(
-                ["git", "log", "-1", "--format=%ct"], stdout=subprocess.PIPE, cwd=pydir
-            )
-        except Exception as exception:
-            print("...failed:", exception)
-        else:
-            mtime = int(p.communicate()[0].strip().decode())
-            timestamp = time.gmtime(mtime)
-
-        if timestamp:
-            lastmod = f"{strftime('%Y-%m-%dT%H:%M:%S', timestamp)}Z"
-
-        if not dry_run:
-            print("Generating __version__.py")
-
-            with open(Path(pydir, "DisplayCAL", "__version__.py"), "w") as versionpy:
-                versionpy.write("# generated by setup.py\n\n")
-                build_time = time.time()
-                versionpy.write(
-                    f"BUILD_DATE = "
-                    f"\"{strftime('%Y-%m-%dT%H:%M:%S', gmtime(build_time))}Z\"\n"
-                )
-
-                if lastmod:
-                    versionpy.write(f"LASTMOD = {lastmod!r}\n")
-
-                if git_version:
-                    print("Version", ".".join(version_base))
-                    versionpy.write("VERSION = (%s)\n" % ", ".join(version_base))
-                    versionpy.write("VERSION_BASE = (%s)\n" % ", ".join(version_base))
-                    versionpy.write("VERSION_STRING = %r\n" % ".".join(version_base))
-
-                    with open(Path(pydir, "VERSION"), "w") as versiontxt:
-                        versiontxt.write(".".join(version_base))
-
-    backup_setup_path = Path(pydir, "setup.cfg.backup")
-    setup_path = Path(pydir, "setup.cfg")
-
-    if not help and not dry_run:
-        # Restore setup.cfg.backup if it exists
-
-        if backup_setup_path.is_file() and not setup_path.is_file():
-            shutil.copy2(backup_setup_path, setup_path)
-
     if not sys.argv[1:]:
         return
 
-    global name, name_html, author, author_email, description, longdesc
-    global DOMAIN, py_maxversion, py_minversion
-    global version, version_lin, version_mac
-    global version_src, version_tuple, version_win
-    global wx_minversion, appstream_id
+    global NAME, NAME_HTML, AUTHOR, AUTHOR_EMAIL, DESCRIPTION, LONG_DESCRIPTION
+    global DOMAIN, PY_MAXVERSION, PY_MINVERSION
+    global VERSION_STRING, VERSION_LIN, VERSION_MAC
+    global VERSION_SRC, VERSION_TUPLE, VERSION_WIN
+    global WX_MINVERSION, APPSTREAM_ID
 
-    # Do not remove the following seemingly unused variables, I know that it seems silly, but for now we need them
+    # Do not remove the following seemingly unused variables,
+    # I know that it seems silly, but for now we need them
+    import DisplayCAL
     from DisplayCAL.meta import (
-        name,
-        name_html,
-        author,
-        author_email,
-        description,
-        lastmod,
-        longdesc,
+        NAME,
+        NAME_HTML,
+        AUTHOR,
+        AUTHOR_EMAIL,
+        DESCRIPTION,
+        LONG_DESCRIPTION,
         DOMAIN,
-        py_maxversion,
-        py_minversion,
-        version,
-        version_lin,
-        version_mac,
-        version_src,
-        version_tuple,
-        version_win,
-        wx_minversion,
+        PY_MAXVERSION,
+        PY_MINVERSION,
+        VERSION_STRING,
+        VERSION_LIN,
+        VERSION_MAC,
+        VERSION_SRC,
+        VERSION_TUPLE,
+        VERSION_WIN,
+        WX_MINVERSION,
         script2pywname,
-        appstream_id,
+        APPSTREAM_ID,
         get_latest_changelog_entry,
     )
 
-    longdesc = fill(longdesc)
+    LONG_DESCRIPTION = fill(LONG_DESCRIPTION)
 
     if not lastmod_time:
-        lastmod_time = calendar.timegm(time.strptime(lastmod, "%Y-%m-%dT%H:%M:%SZ"))
+        lastmod_time = int(time.time())
 
     msiversion = ".".join(
         (
-            str(version_tuple[0]),
-            str(version_tuple[1]),
-            str(version_tuple[2]),
+            str(VERSION_TUPLE[0]),
+            str(VERSION_TUPLE[1]),
+            str(VERSION_TUPLE[2]),
         )
     )
-
-    if not dry_run and not help:
-        if setup_cfg or ("bdist_msi" in sys.argv[1:] and use_setuptools):
-            if not backup_setup_path.exists():
-                shutil.copy2(setup_path, backup_setup_path)
-
-        if "bdist_msi" in sys.argv[1:] and use_setuptools:
-            # setuptools parses options globally even if they're not under the
-            # section of the currently run command
-            os.remove(setup_path)
-
-        if setup_cfg:
-            shutil.copy2(Path(pydir, "misc", f"setup.{setup_cfg}.cfg"), setup_path)
 
     if purge or purge_dist:
         # remove the "build", "DisplayCAL.egg-info" and
@@ -591,7 +506,7 @@ def setup():
         if purge:
             paths += (
                 glob.glob(str(Path(pydir, "build")))
-                + glob.glob(str(Path(pydir, name + ".egg-info")))
+                + glob.glob(str(Path(pydir, NAME + ".egg-info")))
                 + glob.glob(str(Path(pydir, "pyinstaller", "bincache*")))
             )
             sys.argv.remove("purge")
@@ -662,7 +577,7 @@ def setup():
         from DisplayCAL import localization as lang
 
         scripts = get_scripts()
-        provides = [f"<python3>{name}</python3>"]
+        provides = [f"<python3>{NAME}</python3>"]
 
         for script, desc in scripts:
             provides.append(f"<binary>{script}</binary>")
@@ -671,7 +586,7 @@ def setup():
         lang.init()
         languages = []
 
-        for code, tdict in sorted(lang.ldict.items()):
+        for code, tdict in sorted(lang.LDICT.items()):
             if code == "en":
                 continue
 
@@ -687,7 +602,7 @@ def setup():
             )
 
         languages = "\n\t\t".join(languages)
-        tmpl_name = appstream_id + ".appdata.xml"
+        tmpl_name = APPSTREAM_ID + ".appdata.xml"
         misc_tmpl_name = Path(pydir, "misc", tmpl_name)
         dist_tmpl_name = Path(pydir, "dist", tmpl_name)
         replace_placeholders(
@@ -741,22 +656,23 @@ def setup():
             tmpl_types.extend(["0install", "0install-per-user"])
 
         for tmpl_type in tmpl_types:
-            inno_template_path = Path(pydir, "misc", f"{name}-Setup-{tmpl_type}.iss")
+            inno_template_path = Path(pydir, "misc", f"{NAME}-Setup-{tmpl_type}.iss")
             with open(inno_template_path, "r") as inno_template:
                 print(f"inno_template_path: {inno_template_path}")
                 template = inno_template.read()
                 # print(template)
                 inno_script = template % {
-                    "AppCopyright": f"© {strftime('%Y')} {author}",
-                    "AppName": name,
-                    "AppVerName": version,
-                    "AppPublisher": author,
+                    "AppCopyright": f"© {strftime('%Y')} {AUTHOR}",
+                    "AppName": NAME,
+                    "AppArch": arch,
+                    "AppVerName": VERSION_STRING,
+                    "AppPublisher": AUTHOR,
                     "AppPublisherURL": f"https://{DOMAIN}/",
                     "AppSupportURL": f"https://{DOMAIN}/",
                     "AppUpdatesURL": f"https://{DOMAIN}/",
-                    "VersionInfoVersion": ".".join(map(str, version_tuple)),
-                    "VersionInfoTextVersion": version,
-                    "AppVersion": version,
+                    "VersionInfoVersion": ".".join(map(str, VERSION_TUPLE)),
+                    "VersionInfoTextVersion": VERSION_STRING,
+                    "AppVersion": VERSION_STRING,
                     "Platform": get_platform(),
                     "PythonVersion": f"{sys.version_info[0]}.{sys.version_info[1]}",
                     "URL": f"https://{DOMAIN}/",
@@ -769,6 +685,7 @@ def setup():
                     f"{bdist_cmd}.{get_platform()}-py{sys.version_info[0]}.{sys.version_info[1]}",
                 ),
             )
+            print(f"inno_path: {inno_path}")
 
             if not dry_run:
                 dist_path = Path("dist")
@@ -785,8 +702,13 @@ def setup():
             return
 
     if "finalize_msi" in sys.argv[1:]:
+        if msilib is None:
+            raise RuntimeError(
+                "finalize_msi requires the stdlib msilib module, which is not "
+                "available in this Python version."
+            )
         db = msilib.OpenDatabase(
-            rf"dist\{name}-{msiversion}.win32-py{sys.version_info[0]}.{sys.version_info[1]}.msi",
+            rf"dist\{NAME}-{msiversion}.win32-py{sys.version_info[0]}.{sys.version_info[1]}.msi",
             msilib.MSIDBOPEN_TRANSACT,
         )
         view = db.OpenView("SELECT Value FROM Property WHERE Property = 'ProductCode'")
@@ -806,7 +728,7 @@ def setup():
                 (
                     "MenuDir",  # Directory
                     "ProgramMenuFolder",  # Parent
-                    name.upper()[:6] + "~1|" + name,
+                    NAME.upper()[:6] + "~1|" + NAME,
                 )
             ],
         )  # DefaultDir
@@ -815,9 +737,9 @@ def setup():
             "Icon",
             [
                 (
-                    name + ".ico",  # Name
+                    NAME + ".ico",  # Name
                     msilib.Binary(
-                        str(Path(pydir, name, "theme", "icons", name + ".ico"))
+                        str(Path(pydir, NAME, "theme", "icons", NAME + ".ico"))
                     ),
                 )
             ],
@@ -830,7 +752,7 @@ def setup():
                     "uninstall.ico",  # Name
                     msilib.Binary(
                         str(
-                            Path(pydir, name, "theme", "icons", name + "-uninstall.ico")
+                            Path(pydir, NAME, "theme", "icons", NAME + "-uninstall.ico")
                         )
                     ),
                 )
@@ -842,7 +764,7 @@ def setup():
             [
                 (
                     "MenuDir",  # FileKey
-                    name,  # Component
+                    NAME,  # Component
                     None,  # FileName
                     "MenuDir",  # DirProperty
                     2,
@@ -858,8 +780,8 @@ def setup():
                     -1,  # Root
                     rf"Software\Microsoft\Windows\CurrentVersion\Uninstall\{productcode}",
                     "DisplayIcon",  # Name
-                    r"[icons]%s.ico" % name,  # Value
-                    name,
+                    r"[icons]%s.ico" % NAME,  # Value
+                    NAME,
                 )
             ],
         )  # Component
@@ -868,18 +790,18 @@ def setup():
             "Shortcut",
             [
                 (
-                    name,  # Shortcut
+                    NAME,  # Shortcut
                     "MenuDir",  # Directory
-                    name.upper()[:6] + "~1|" + name,  # Name
-                    name,  # Component
+                    NAME.upper()[:6] + "~1|" + NAME,  # Name
+                    NAME,  # Component
                     r"[TARGETDIR]pythonw.exe",  # Target
-                    rf'"[TARGETDIR]Scripts\{name}"',  # Arguments
+                    rf'"[TARGETDIR]Scripts\{NAME}"',  # Arguments
                     None,  # Description
                     None,  # Hotkey
-                    f"{name}.ico",  # Icon
+                    f"{NAME}.ico",  # Icon
                     None,  # IconIndex
                     None,  # ShowCmd
-                    name,
+                    NAME,
                 )
             ],
         )  # WkDir
@@ -891,15 +813,15 @@ def setup():
                     "CHANGES",  # Shortcut
                     "MenuDir",  # Directory
                     "CHANGES|CHANGES",  # Name
-                    name,  # Component
-                    rf"[{name}]CHANGES.html",  # Target
+                    NAME,  # Component
+                    rf"[{NAME}]CHANGES.html",  # Target
                     None,  # Arguments
                     None,  # Description
                     None,  # Hotkey
                     None,  # Icon
                     None,  # IconIndex
                     None,  # ShowCmd
-                    name,
+                    NAME,
                 )
             ],
         )  # WkDir
@@ -911,15 +833,15 @@ def setup():
                     "LICENSE",  # Shortcut
                     "MenuDir",  # Directory
                     "LICENSE|LICENSE",  # Name
-                    name,  # Component
-                    rf"[{name}]LICENSE.txt",  # Target
+                    NAME,  # Component
+                    rf"[{NAME}]LICENSE.txt",  # Target
                     None,  # Arguments
                     None,  # Description
                     None,  # Hotkey
                     None,  # Icon
                     None,  # IconIndex
                     None,  # ShowCmd
-                    name,
+                    NAME,
                 )
             ],
         )  # WkDir
@@ -931,15 +853,15 @@ def setup():
                     "README",  # Shortcut
                     "MenuDir",  # Directory
                     "README|README",  # Name
-                    name,  # Component
-                    rf"[{name}]README.html",  # Target
+                    NAME,  # Component
+                    rf"[{NAME}]README.html",  # Target
                     None,  # Arguments
                     None,  # Description
                     None,  # Hotkey
                     None,  # Icon
                     None,  # IconIndex
                     None,  # ShowCmd
-                    name,
+                    NAME,
                 )
             ],
         )  # WkDir
@@ -951,7 +873,7 @@ def setup():
                     "Uninstall",  # Shortcut
                     "MenuDir",  # Directory
                     "UNINST|Uninstall",  # Name
-                    name,  # Component
+                    NAME,  # Component
                     r"[SystemFolder]msiexec",  # Target
                     r"/x" + productcode,  # Arguments
                     None,  # Description
@@ -1005,7 +927,7 @@ def setup():
             .strip(),
             "CHANGELOG": format_changelog(changelog, "rpm"),
         }
-        tgz_file_path = Path(pydir, "dist", f"{name}-{version}.tar.gz")
+        tgz_file_path = Path(pydir, "dist", f"{NAME}-{VERSION_STRING}.tar.gz")
 
         if tgz_file_path.is_file():
             with open(tgz_file_path, "rb") as f:
@@ -1017,16 +939,16 @@ def setup():
             "debian.control",
             "debian.copyright",
             "debian.rules",
-            f"{name}.changes",
-            f"{name}.dsc",
-            f"{name}.spec",
+            f"{NAME}.changes",
+            f"{NAME}.dsc",
+            f"{NAME}.spec",
             "appimage.yml",
             Path("0install", "PKGBUILD"),
             Path("0install", "debian.changelog"),
             Path("0install", "debian.control"),
             Path("0install", "debian.rules"),
-            Path("0install", f"{name}.dsc"),
-            Path("0install", f"{name}.spec"),
+            Path("0install", f"{NAME}.dsc"),
+            Path("0install", f"{NAME}.spec"),
         ):
             tmpl_path = Path(pydir, "misc", tmpl_name)
             replace_placeholders(
@@ -1052,11 +974,11 @@ def setup():
             dependencies[i] = " ".join(dependencies[i])
 
         release = 1  # TODO: parse setup.cfg
-        rpm_filename = Path(pydir, "dist", f"{name}-{version}-{release}.{arch}.rpm")
+        rpm_filename = Path(pydir, "dist", f"{NAME}-{VERSION_STRING}-{release}.{arch}.rpm")
 
         if not dry_run:
             # remove target directory (and contents) if it already exists
-            target_dir = Path(pydir, "dist", f"{name}-{version}")
+            target_dir = Path(pydir, "dist", f"{NAME}-{VERSION_STRING}")
 
             if target_dir.exists():
                 shutil.rmtree(target_dir)
@@ -1075,16 +997,16 @@ def setup():
             # update changelog
             shutil.copy2(
                 Path(pydir, "dist", "debian.changelog"),
-                Path(pydir, "dist", f"{name}-{version}", "debian", "changelog"),
+                Path(pydir, "dist", f"{NAME}-{VERSION_STRING}", "debian", "changelog"),
             )
             # update rules
             shutil.copy2(
                 Path(pydir, "misc", "alien.rules"),
-                Path(pydir, "dist", f"{name}-{version}", "debian", "rules"),
+                Path(pydir, "dist", f"{NAME}-{VERSION_STRING}", "debian", "rules"),
             )
             # update control
             control_filename = Path(
-                pydir, "dist", f"{name}-{version}", "debian", "control"
+                pydir, "dist", f"{NAME}-{VERSION_STRING}", "debian", "control"
             )
             shutil.copy2(Path(pydir, "dist", "debian.control"), control_filename)
 
@@ -1108,7 +1030,7 @@ def setup():
                 Path(pydir, "build", f"pyi.{get_platform()}-{sys.version_info[0]}.{sys.version_info[1]}"),
                 "--distpath",
                 Path(pydir, "dist", f"pyi.{get_platform()}-{sys.version_info[0]}.{sys.version_info[1]}"),
-                Path(pydir, "misc", f"{name}.pyi.spec"),
+                Path(pydir, "misc", f"{NAME}.pyi.spec"),
             ]
         )
 
@@ -1129,13 +1051,13 @@ def setup():
         for script, desc in scripts:
             cmdname = "run"
 
-            if script != name:
-                cmdname += "-" + script.replace(name + "-", "")
+            if script != NAME:
+                cmdname += "-" + script.replace(NAME + "-", "")
 
             cmds.append((cmdname, script, desc))
 
         # Get archive digest
-        extract = f"{name}-{version}"
+        extract = f"{NAME}-{VERSION_STRING}"
         archive_name = f"{extract}.tar.gz"
         archive_path = Path(pydir, "dist", archive_name)
 
@@ -1158,10 +1080,10 @@ def setup():
         for tmpl_name in (
             "7z.xml",
             "argyllcms.xml",
-            f"{name}.xml",
-            f"{name}-linux.xml",
-            f"{name}-mac.xml",
-            f"{name}-win32.xml",
+            f"{NAME}.xml",
+            f"{NAME}-linux.xml",
+            f"{NAME}-mac.xml",
+            f"{NAME}-win32.xml",
             "numpy.xml",
             "SDL.xml",
             "pyglet.xml",
@@ -1183,7 +1105,7 @@ def setup():
                 tmpl_path = Path(pydir, "misc", "0install", tmpl_name)
                 replace_placeholders(tmpl_path, dist_path, lastmod_time)
 
-            if tmpl_name.startswith(name):
+            if tmpl_name.startswith(NAME):
                 with open(dist_path) as dist_file:
                     xml = dist_file.read()
                     domtree = minidom.parseString(xml)
@@ -1193,7 +1115,7 @@ def setup():
                 # Get languages
                 langs = [
                     Path(lang).suffix[0]
-                    for lang in glob.glob(str(Path(name, "lang", "*.json")))
+                    for lang in glob.glob(str(Path(NAME, "lang", "*.json")))
                 ]
                 # Get architecture groups
                 groups = domtree.getElementsByTagName("group")
@@ -1227,7 +1149,7 @@ def setup():
 
                         runner.setAttribute("interface", python)
                         runner.setAttribute(
-                            "version", f"{py_minversion}.{py_minversion}..!3.0"
+                            "version", f"{PY_MINVERSION}.{PY_MINVERSION}..!3.0"
                         )
 
                         for cmdname, script, desc in cmds:
@@ -1250,7 +1172,7 @@ def setup():
 
                     for implementation in group.getElementsByTagName("implementation"):
                         match = (
-                            implementation.getAttribute("version") == version
+                            implementation.getAttribute("version") == VERSION_STRING
                             and implementation.getAttribute("stability") == stability
                         )
 
@@ -1259,7 +1181,7 @@ def setup():
 
                     if not match:
                         implementation = domtree.createElement("implementation")
-                        implementation.setAttribute("version", version)
+                        implementation.setAttribute("version", VERSION_STRING)
                         implementation.setAttribute(
                             "released", strftime("%Y-%m-%d", gmtime(lastmod_time))
                         )
@@ -1291,7 +1213,7 @@ def setup():
                     archive.setAttribute("extract", extract)
                     archive.setAttribute(
                         "href",
-                        f"http://{DOMAIN}/download.php?version={version}&"
+                        f"http://{DOMAIN}/download.php?version={VERSION_STRING}&"
                         f"suffix=.tar.gz{folder}",
                     )
                     archive.setAttribute("size", str(os.stat(archive_path).st_size))
@@ -1302,7 +1224,7 @@ def setup():
                     for cmdname, script, desc in cmds:
                         # Add entry-points to interface
                         if (
-                            script == f"{name}-eeColor-to-madVR-converter"
+                            script == f"{NAME}-eeColor-to-madVR-converter"
                             or script.endswith("-console")
                         ):
                             continue
@@ -1441,8 +1363,8 @@ def setup():
             if zeroinstall_version < "2.8":
                 zeroinstall_version = "2.8"
 
-            feed_uri = f"http://{DOMAIN}/0install/{name}.xml"
-            dist_dir = Path(pydir, "dist", "0install", name + "-0install")
+            feed_uri = f"http://{DOMAIN}/0install/{NAME}.xml"
+            dist_dir = Path(pydir, "dist", "0install", NAME + "-0install")
 
             for script, desc in scripts + [
                 ("0install-launcher", "0install Launcher"),
@@ -1451,10 +1373,10 @@ def setup():
                 if script.endswith("-apply-profiles"):
                     continue
 
-                desc = re.sub(rf"^{name} ", "", desc).strip()
+                desc = re.sub(rf"^{NAME} ", "", desc).strip()
 
                 if script == "0install-launcher":
-                    bundlename = name
+                    bundlename = NAME
                 else:
                     bundlename = desc
 
@@ -1470,9 +1392,9 @@ def setup():
                     },
                 )
 
-                if script.startswith(name):
+                if script.startswith(NAME):
                     run = "0launch%s -- %s" % (
-                        re.sub(r"^%s" % name, " --command=run", script),
+                        re.sub(r"^%s" % NAME, " --command=run", script),
                         feed_uri,
                     )
                 else:
@@ -1512,8 +1434,8 @@ def setup():
                 if not resource_dir_path.is_dir():
                     os.mkdir(resource_dir_path)
 
-                if script.startswith(name):
-                    iconsrc = Path(pydir, name, "theme", "icons", script + ".icns")
+                if script.startswith(NAME):
+                    iconsrc = Path(pydir, NAME, "theme", "icons", script + ".icns")
                 else:
                     iconsrc = Path(pydir, "0install", "ZeroInstall.icns")
 
@@ -1544,10 +1466,10 @@ def setup():
         create_appdmg(zeroinstall)
 
     if bdist_pkg:
-        version_dir = Path(pydir, "dist", version)
+        version_dir = Path(pydir, "dist", VERSION_STRING)
         replace_placeholders(
-            Path(pydir, "misc", name + ".pkgproj"),
-            Path(version_dir, name + "-" + version + ".pkgproj"),
+            Path(pydir, "misc", NAME + ".pkgproj"),
+            Path(version_dir, NAME + "-" + VERSION_STRING + ".pkgproj"),
             lastmod_time,
             {"PYDIR": pydir},
         )
@@ -1556,26 +1478,26 @@ def setup():
                 pydir,
                 "dist",
                 f"py2app.{get_platform()}-py{sys.version_info[0]}.{sys.version_info[1]}",
-                f"{name}-{version}",
+                f"{NAME}-{VERSION_STRING}",
             ),
             version_dir,
         )
-        os.rename(Path(version_dir, f"{name}-{version}"), Path(version_dir, name))
+        os.rename(Path(version_dir, f"{NAME}-{VERSION_STRING}"), Path(version_dir, NAME))
 
         if (
             subprocess.call(
                 [
                     "/usr/local/bin/packagesbuild",
                     "-v",
-                    Path(version_dir, f"{name}-{version}.pkgproj"),
+                    Path(version_dir, f"{NAME}-{VERSION_STRING}.pkgproj"),
                 ]
             )
             == 0
         ):
             # Success
             os.rename(
-                Path(version_dir, f"{name}.pkg"),
-                Path(version_dir, f"{name}-{version}.pkg"),
+                Path(version_dir, f"{NAME}.pkg"),
+                Path(version_dir, f"{NAME}-{VERSION_STRING}.pkg"),
             )
 
 
