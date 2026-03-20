@@ -1,6 +1,7 @@
 __pycache__/
 .DS_Store
 .env
+.zed
 .ruff_cache/
 .tox/
 .venv*/
@@ -23,4 +24,3 @@ cacert.pem
 htmlcov
 main.py
 MANIFEST.in
-VERSION

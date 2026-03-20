@@ -141,8 +141,18 @@ def test_colorimeter_correction_check_overwrite(
     path = data_files["0_16.ti3"].absolute()
     with open(path, "rb") as cgatsfile:
         cgats = universal_newlines(cgatsfile.read())
-    with check_call(BaseInteractiveDialog, "ShowWindowModalBlocking", response):
-        assert colorimeter_correction_check_overwrite(mainframe, cgats, update) == value
+    # Pre-create the target file so os.path.isfile() returns True and the
+    # overwrite dialog is always triggered, making the test self-contained.
+    target_path = get_cgats_path(cgats)
+    os.makedirs(os.path.dirname(target_path), exist_ok=True)
+    with open(target_path, "wb") as f:
+        f.write(b"placeholder")
+    try:
+        with check_call(BaseInteractiveDialog, "ShowWindowModalBlocking", response):
+            assert colorimeter_correction_check_overwrite(mainframe, cgats, update) == value
+    finally:
+        if os.path.exists(target_path):
+            os.remove(target_path)
 
 
 @pytest.mark.parametrize("file", ("0_16.ti3", "0_16_with_refresh.ti3", "default.ti3"))

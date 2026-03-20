@@ -50,7 +50,8 @@ from threading import current_thread, main_thread
 from time import sleep, strftime, time
 from typing import Any, Callable, ClassVar
 
-import distro
+if sys.platform not in ("win32", "darwin"):
+    import distro
 from send2trash import send2trash
 
 if sys.platform == "darwin":

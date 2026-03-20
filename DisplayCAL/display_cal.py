@@ -448,11 +448,14 @@ def app_update_check(parent=None, silent=False, snapshot=False, argyll=False):
             wx.CallAfter(
                 parent.check_instrument_setup, check_donation, (parent, snapshot)
             )
-        return
+            return
+        # For non-silent mode, treat as "up to date" and fall through to the
+        # existing version-comparison branches below, which will call wx.CallAfter
+        # with the appropriate "up to date" dialog or argyll-bin handler.
+        resp = curversion_tuple
 
-    #HACK: Unsure why this is here, but it breaks the tests when headless
-    #if not wx.GetApp():
-    #    return
+    if not wx.GetApp():
+        return
 
     try:
         new_version_tuple = resp
@@ -502,9 +505,8 @@ def app_update_check(parent=None, silent=False, snapshot=False, argyll=False):
                     chglog,
                 )
 
-        #HACK: unsure why this is here, but it breaks the tests when headless
-        #if not wx.GetApp():
-        #    return
+        if not wx.GetApp():
+            return
 
         wx.CallAfter(
             app_update_confirm,
@@ -1243,7 +1245,7 @@ def get_cgats_path(cgats: bytes) -> str:
     name = re.sub(r"[\\/:;*?\"<>|]+", "_", make_argyll_compatible_path(description))[
         :255
     ]
-    extension = cgats[:7].strip().lower().decode("utf-8")
+    extension = cgats.split()[0].lower().decode("utf-8")
     return os.path.join(config.get_argyll_data_dir(), f"{name}.{extension}")
 
 
