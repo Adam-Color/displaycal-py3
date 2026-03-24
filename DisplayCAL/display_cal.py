@@ -416,10 +416,22 @@ def is_new_update():
         print(f"Error checking for updates: Unexpected error - {str(e)}")
     return False
 
-def app_update_check(parent=None, silent=False, snapshot=False, argyll=False):
-    """Check for application update. Show an error dialog if a failure
-    occurs."""
-    global APP_IS_UPTODATE
+def app_update_check(
+    parent: None | wx.Window = None,
+    silent: bool = False,
+    snapshot: bool = False,
+    argyll: bool = False,
+) -> None:
+    """Check for application update. Show an error dialog if a failure occurs.
+
+    Args:
+        parent (None | wx.Window, optional): The parent window for the dialog.
+        silent (bool, optional): If True, suppresses dialog display and
+            only performs the update check.
+        snapshot (bool, optional): If True, the application is a snapshot build.
+        argyll (bool, optional): If True, check for ArgyllCMS update.
+    """
+    global APP_IS_UP_TO_DATE
     if argyll:
         if TEST_UPDATE:
             argyll_version = [0, 0, 0]
@@ -428,50 +440,83 @@ def app_update_check(parent=None, silent=False, snapshot=False, argyll=False):
         else:
             argyll_version = intlist(getcfg("argyll.version").split("."))
         curversion_tuple = tuple(argyll_version)
-        version_file = "Argyll/VERSION"
         chglog_file = "Argyll/ChangesSummary.html"
+        # Fetch the latest ArgyllCMS version from argyllcms.com
+        latest_argyll_str = get_argyll_latest_version()
+        try:
+            new_version_tuple = tuple(int(n) for n in latest_argyll_str.split("."))
+        except (ValueError, AttributeError):
+            print(lang.getstr("update_check.fail.version", "ArgyllCMS"))
+            if not silent:
+                wx.CallAfter(
+                    InfoDialog,
+                    parent,
+                    msg=lang.getstr("update_check.fail.version", "ArgyllCMS"),
+                    ok=lang.getstr("ok"),
+                    bitmap=get_icon(32, "dialog-error"),
+                    log=False,
+                )
+                return
+            new_version_tuple = (0, 0, 0, 0)
+        if not wx.GetApp():
+            return
     elif snapshot:
-        # Snapshot
+        # Snapshot — fetch the version file directly from the project domain
         curversion_tuple = VERSION_TUPLE
-        version_file = "SNAPSHOT_VERSION"
         chglog_file = "SNAPSHOT_CHANGES.html"
+        resp = http_request(
+            parent,
+            DOMAIN,
+            "GET",
+            "/SNAPSHOT_VERSION",
+            failure_msg=lang.getstr("update_check.fail"),
+            silent=silent,
+        )
+        if resp is False:
+            if silent:
+                # Check if we need to run instrument setup
+                wx.CallAfter(
+                    parent.check_instrument_setup, check_donation, (parent, snapshot)
+                )
+            return
+        data = resp.read()
+        if not wx.GetApp():
+            return
+        try:
+            new_version_tuple = tuple(int(n) for n in data.decode().split("."))
+        except ValueError:
+            print(lang.getstr("update_check.fail.version", DOMAIN))
+            if not silent:
+                wx.CallAfter(
+                    InfoDialog,
+                    parent,
+                    msg=lang.getstr("update_check.fail.version", DOMAIN),
+                    ok=lang.getstr("ok"),
+                    bitmap=get_icon(32, "dialog-error"),
+                    log=False,
+                )
+                return
+            new_version_tuple = (0, 0, 0, 0)
     else:
         # Stable
         print(lang.getstr("update_check"))
         curversion_tuple = VERSION_TUPLE
-        version_file = "VERSION"
         chglog_file = "CHANGES.html"
-    resp = is_new_update()
-    if resp is False:
-        if silent:
-            # Check if we need to run instrument setup
-            wx.CallAfter(
-                parent.check_instrument_setup, check_donation, (parent, snapshot)
-            )
+        resp = is_new_update()
+        if resp is False:
+            if silent:
+                # Check if we need to run instrument setup
+                wx.CallAfter(
+                    parent.check_instrument_setup, check_donation, (parent, snapshot)
+                )
+                return
+            # Non-silent with no update available: fall through to the
+            # "up to date" branches below using the current version.
+            resp = curversion_tuple
+        if not wx.GetApp():
             return
-        # For non-silent mode, treat as "up to date" and fall through to the
-        # existing version-comparison branches below, which will call wx.CallAfter
-        # with the appropriate "up to date" dialog or argyll-bin handler.
-        resp = curversion_tuple
-
-    if not wx.GetApp():
-        return
-
-    try:
         new_version_tuple = resp
-    except ValueError:
-        print(lang.getstr("update_check.fail.version", DOMAIN))
-        if not silent:
-            wx.CallAfter(
-                InfoDialog,
-                parent,
-                msg=lang.getstr("update_check.fail.version", DOMAIN),
-                ok=lang.getstr("ok"),
-                bitmap=get_icon(32, "dialog-error"),
-                log=False,
-            )
-            return
-        new_version_tuple = (0, 0, 0, 0)
+
     if not argyll:
         APP_IS_UP_TO_DATE = new_version_tuple <= curversion_tuple
     if new_version_tuple > curversion_tuple:
