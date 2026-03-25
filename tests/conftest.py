@@ -190,6 +190,8 @@ def setup_argyll():
         writecfg()
         os.environ["PATH"] = f"{argyll_path}{os.pathsep}{os.environ['PATH']}"
         yield argyll_path
+        setcfg("argyll.dir", "")
+        writecfg()
         cleanup()
     else:
         print("argyll_path is invalid!")

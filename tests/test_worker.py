@@ -112,6 +112,18 @@ def test_worker_instrument_supports_css_1():
 def test_generate_b2a_from_inverse_table(data_files, setup_argyll):
     """Test Worker.generate_B2A_from_inverse_table() method"""
     import wx
+    from DisplayCAL.argyll import ARGYLL_UTILS
+    from DisplayCAL.config import setcfg, writecfg
+
+    # Other tests in this module call initcfg() which re-reads DisplayCAL.ini
+    # from disk. Under xdist, a concurrent worker may have overwritten that
+    # file with its own (now-deleted) temp Argyll path, poisoning our
+    # in-process config. Re-assert the path from the session fixture and
+    # flush the utility-lookup cache so get_argyll_util() searches fresh.
+    setcfg("argyll.dir", str(setup_argyll))
+    ARGYLL_UTILS.clear()
+    writecfg()  # pool workers (SpawnPoolWorker-*) read config from disk
+
     # for some reason we sometimes need to have a wx.App() running
     _ = wx.GetApp() or wx.App()
     worker = Worker()
