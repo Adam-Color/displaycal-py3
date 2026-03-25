@@ -9475,21 +9475,27 @@ BEGIN_DATA
                 "s": "DLP Projector RGBCMY Filter Wheel",
                 "u": "Unknown",
             }
-        result = self.exec_cmd(
-            get_argyll_util("ccxxmake"),
-            ["-??"],
-            capture_output=True,
-            skip_scripts=True,
-            silent=True,
-            log_output=False,
-        )
-        if isinstance(result, Exception):
+        ccxxmake = get_argyll_util("ccxxmake")
+        if not ccxxmake:
+            return {}
+        try:
+            proc = sp.run(
+                [ccxxmake, "-??"],
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            # ccxxmake -?? always exits with code 1 and writes to stderr;
+            # fall back to stderr when stdout is empty so the output is
+            # captured regardless of the OS / wxPython combination in use.
+            raw_output = proc.stdout or proc.stderr
+        except Exception as exception:
             traceback.print_exc()
-            print(result)
+            print(exception)
             return {}
         technology_strings = {}
         in_tech = False
-        for line in self.output:
+        for line in raw_output.splitlines():
             if not (parts := line.strip().split(None, 1)):
                 continue
             if (arg := parts.pop(0)) == "-t":

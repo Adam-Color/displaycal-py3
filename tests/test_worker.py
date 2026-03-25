@@ -689,16 +689,22 @@ def test_get_technology_strings_parses_ccxxmake_output(monkeypatch):
     worker = Worker()
     worker.argyll_version = [3, 5, 0]
 
-    def patched_exec_cmd(*args, **kwargs):
-        worker.output = [
-            "-t c CRT",
-            "-t q LCD PFS Phosphor TFT",
-            "-t o LED OLED",
-            "-Y ignored option section",
-        ]
-        return True
+    # ccxxmake -?? always exits with code 1 and writes to stderr; the
+    # implementation uses subprocess directly so we patch sp.run and
+    # get_argyll_util rather than the old exec_cmd approach.
+    fake_stderr = "\n".join([
+        "-t c CRT",
+        "-t q LCD PFS Phosphor TFT",
+        "-t o LED OLED",
+        "-Y ignored option section",
+    ])
 
-    monkeypatch.setattr(worker, "exec_cmd", patched_exec_cmd)
+    class FakeCompletedProcess:
+        stdout = ""
+        stderr = fake_stderr
+
+    monkeypatch.setattr("DisplayCAL.worker.get_argyll_util", lambda *a, **kw: "/fake/ccxxmake")
+    monkeypatch.setattr("DisplayCAL.worker.sp.run", lambda *a, **kw: FakeCompletedProcess())
     result = worker.get_technology_strings()
     assert result == {
         "c": "CRT",
