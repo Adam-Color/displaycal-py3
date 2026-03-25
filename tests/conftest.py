@@ -9,6 +9,8 @@ import tarfile
 import tempfile
 import zipfile
 
+from urllib.error import URLError
+
 from requests import HTTPError
 
 from DisplayCAL.debughelpers import DownloadError
@@ -153,7 +155,7 @@ def setup_argyll():
         print(f"URL: {url}")
         worker = Worker()
         result = worker.download(url, download_dir=argyll_temp_path)
-        if isinstance(result, (DownloadError, HTTPError, PermissionError)):
+        if isinstance(result, (DownloadError, HTTPError, PermissionError, URLError)):
             print(f"Error downloading {url}: {result}")
             raise result
         download_path = result
