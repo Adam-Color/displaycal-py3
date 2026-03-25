@@ -272,9 +272,9 @@ def test_init_startup_frame() -> None:
 
 
 @pytest.mark.skipif(
-    sys.platform == "darwin" and os.getenv("GITHUB_ACTIONS") == "true",
-    reason="MeasurementFileCheckSanityDialog is failing on CI macOS machines, "
-    "skipping test.",
+    sys.platform == "darwin",
+    reason="MeasurementFileCheckSanityDialog hard-crashes the pytest-xdist worker "
+    "process on macOS due to wxPython grid widget creation in a subprocess context.",
 )
 def test_init_measurement_file_check_sanity_dialog_frame(
     data_files, mainframe: MainFrame
